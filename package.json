@@ -1,0 +1,19 @@
+{
+  "name": "avans-1.4-nodejs-project",
+  "version": "1.0.0",
+  "description": "Avans school project",
+  "main": "server.js",
+  "scripts": {
+    "test": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/onno204/avans-1.4-nodejs-project.git"
+  },
+  "author": "onno204",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/onno204/avans-1.4-nodejs-project/issues"
+  },
+  "homepage": "https://github.com/onno204/avans-1.4-nodejs-project#readme"
+}

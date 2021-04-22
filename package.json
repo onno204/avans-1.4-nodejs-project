@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/onno204/avans-1.4-nodejs-project/issues"
   },
-  "homepage": "https://github.com/onno204/avans-1.4-nodejs-project#readme"
+  "homepage": "https://github.com/onno204/avans-1.4-nodejs-project#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }

@@ -13,8 +13,7 @@ router.get('/sysinfo', (req, res) => {
 });
 
 
-const studenthouse_router = express.Router();
-studenthouse_router.get('/info', (req, res) => {
+router.get('/info', (req, res) => {
     res.set('Content-Type', 'application/json');
     res.send(JSON.stringify({
         "developer": "onno204",
@@ -23,7 +22,6 @@ studenthouse_router.get('/info', (req, res) => {
     }));
 });
 
-router.use('/student_house', studenthouse_router);
 app.use('/api/v1', router);
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`);

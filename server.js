@@ -14,7 +14,7 @@ router.get('/sysinfo', (req, res) => {
 
 
 const studenthouse_router = express.Router();
-studenthouse_router.get('/create_house', (req, res) => {
+studenthouse_router.get('/info', (req, res) => {
     res.set('Content-Type', 'application/json');
     res.send(JSON.stringify({
         "developer": "onno204",

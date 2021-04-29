@@ -4,7 +4,9 @@
   "description": "Avans school project",
   "main": "server.js",
   "scripts": {
-    "test": "",
+    "test" :  "mocha -reporter spec test/**/*.test.js --exit" ,
+    "coverage" :  "nyc --reporter=lcov npm run test" ,
+    "sonar" :  "sonar-scanner",
     "pretty-quick": "pretty-quick",
     "prepare": "npm set-script prepare \"husky install\" && npm run prepare"
   },
@@ -23,8 +25,10 @@
     "husky": "^6.0.0"
   },
   "devDependencies": {
+    "nyc": "^15.1.0",
     "prettier": "^2.2.1",
-    "pretty-quick": "^3.1.0"
+    "pretty-quick": "^3.1.0",
+    "sonarqube-scanner": "^2.8.0"
   },
   "husky": {
     "hooks": {

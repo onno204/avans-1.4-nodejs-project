@@ -1,0 +1,6 @@
+projectKey=cRz17jd6lbSenltTMa4XcRz17jd6lbSenltTMa4XcRz17jd6lbSenltTMa4XcRz17jd6lbSenltTMa4X
+serverUrl=http://sonarqube.avans-informatica-breda.nl
+serverVersion=7.4.0.18908
+dashboardUrl=http://sonarqube.avans-informatica-breda.nl/dashboard?id=cRz17jd6lbSenltTMa4XcRz17jd6lbSenltTMa4XcRz17jd6lbSenltTMa4XcRz17jd6lbSenltTMa4X
+ceTaskId=AXkdnH51TNm1xigl99aj
+ceTaskUrl=http://sonarqube.avans-informatica-breda.nl/api/ce/task?id=AXkdnH51TNm1xigl99aj

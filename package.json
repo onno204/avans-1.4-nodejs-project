@@ -4,7 +4,9 @@
   "description": "Avans school project",
   "main": "server.js",
   "scripts": {
-    "test": ""
+    "test": "",
+    "pretty-quick": "pretty-quick",
+    "prepare": "npm set-script prepare \"husky install\" && npm run prepare"
   },
   "repository": {
     "type": "git",
@@ -17,6 +19,16 @@
   },
   "homepage": "https://github.com/onno204/avans-1.4-nodejs-project#readme",
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "husky": "^6.0.0"
+  },
+  "devDependencies": {
+    "prettier": "^2.2.1",
+    "pretty-quick": "^3.1.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged"
+    }
   }
 }

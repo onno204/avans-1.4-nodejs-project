@@ -4,9 +4,9 @@
   "description": "Avans school project",
   "main": "server.js",
   "scripts": {
-    "test" :  "mocha -reporter spec test/**/*.test.js --exit" ,
-    "coverage" :  "nyc --reporter=lcov npm run test" ,
-    "sonar" :  "sonar-scanner",
+    "test": "mocha -reporter spec test/**/*.test.js --exit",
+    "coverage": "nyc --reporter=lcov npm run test",
+    "sonar": "sonar-scanner",
     "pretty-quick": "pretty-quick",
     "prepare": "npm set-script prepare \"husky install\" && npm run prepare"
   },
@@ -21,10 +21,12 @@
   },
   "homepage": "https://github.com/onno204/avans-1.4-nodejs-project#readme",
   "dependencies": {
+    "chai": "^4.3.4",
     "express": "^4.17.1",
     "husky": "^6.0.0"
   },
   "devDependencies": {
+    "mocha": "^8.3.2",
     "nyc": "^15.1.0",
     "prettier": "^2.2.1",
     "pretty-quick": "^3.1.0",

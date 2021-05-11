@@ -21,7 +21,8 @@
   },
   "homepage": "https://github.com/onno204/avans-1.4-nodejs-project#readme",
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "tracer": "^1.1.4"
   },
   "devDependencies": {
     "chai": "^4.3.4",

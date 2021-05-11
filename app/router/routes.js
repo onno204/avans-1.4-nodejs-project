@@ -9,7 +9,7 @@ router.use(function timeLog (req, res, next) {
 })
 
 router.use('/info', require('./controllers/info.js'));
-router.use('/studenthouse', require('./controllers/studenthouse/routes.js'));
-router.use('/user', require('./controllers/users/routes.js'));
+router.use('/studenthome', require('./studenthome.js'));
+// router.use('/user', require('./controllers/users/routes.js'));
 
 module.exports = router

@@ -1,28 +1,14 @@
 const port = process.env.PORT || 3000;
 const express = require('express');
 const app = express();
-const router = express.Router();
+const routes = require('./app/router/routes')
+const logger = require('tracer').console()
+const bodyParser = require('body-parser');
 
-router.get('/sysinfo', (req, res) => {
-    res.set('Content-Type', 'application/json');
-    res.send(JSON.stringify({
-        "developer": "onno204",
-        "student_number": "2167988",
-        "description": "School project",
-    }));
-});
-
-
-router.get('/info', (req, res) => {
-    res.set('Content-Type', 'application/json');
-    res.send(JSON.stringify({
-        "developer": "onno204",
-        "student_number": "2167988",
-        "description": "School project",
-    }));
-});
-
-app.use('/api/v1', router);
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use('/api', routes);
 app.listen(port, () => {
-    console.log(`Example app listening at http://localhost:${port}`);
+    logger.log(`Avans app listening at http://localhost:${port}`);
 });
+
+module.exports = app;

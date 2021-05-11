@@ -10,3 +10,5 @@ app.use('/api/v1', routes);
 app.listen(port, () => {
     logger.log(`Avans app listening at http://localhost:${port}`);
 });
+
+module.exports = app;

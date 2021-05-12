@@ -2,6 +2,6 @@
 
 ## Node API server file structure
 
-Server start in `server.js`
-Tests in `test/..`
-DAO/Controllers in `app/..`
+- Server start in `server.js`
+- Tests in `test/..`
+- DAO/Controllers in `app/..`

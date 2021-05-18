@@ -24,7 +24,9 @@
   "homepage": "https://github.com/onno204/avans-1.4-nodejs-project#readme",
   "dependencies": {
     "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
     "mysql": "^2.18.1",
+    "password-hash": "^1.2.2",
     "tracer": "^1.1.4"
   },
   "devDependencies": {

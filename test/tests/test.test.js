@@ -1,6 +1,7 @@
 const app = require('./../../server.js');
 const chai = require('chai');
 const expect = require('chai').expect
+const faker = require('faker/locale/nl');
 chai.use(require('chai-http'));
 
 const collectedData = {};
@@ -19,21 +20,23 @@ describe('API', function () {
     describe('Studenthouse', function () {
         describe('#UC-201- Create studenthouse', function () {
             it('#UC-201-1 should create a studenthouse without error', function (done) {
+                const house_data = {
+                    'name': faker.company.companyName(undefined),
+                    'street': faker.address.streetName(false),
+                    'housenumber': faker.datatype.number(),
+                    'postalcode': faker.address.zipCode(undefined),
+                    'city': faker.address.city(),
+                    'phonenumber': faker.phone.phoneNumber(undefined)
+                };
                 chai.request(app)
                     .post('/api/studenthome')
                     .type('form')
-                    .send({
-                        'name': 'Studenthouse 1',
-                        'street': 'Street',
-                        'housenumber': 32,
-                        'postalcode': '4811AC',
-                        'city': 'Breda',
-                        'phonenumber': '0622467104'
-                    })
+                    .send(house_data)
                     .end((err, res) => {
                         expect(res).to.have.status(201);
                         expect(res).to.have.property('body').to.have.property('success').to.equal(true);
                         expect(res).to.have.property('body').to.have.property('id');
+                        collectedData.createdHouse = house_data;
                         collectedData.createdHouseId = res.body.id;
                         done()
                     });
@@ -59,7 +62,7 @@ describe('API', function () {
                     .end((err, res) => {
                         expect(res).to.have.status(200);
                         expect(res).to.have.property('body').to.have.property('success').to.equal(true);
-                        expect(res).to.have.property('body').to.have.property('house');
+                        expect(res).to.have.property('body').to.have.property('house').own.include(collectedData.createdHouse);
                         collectedData.houseDetails = res.body.house;
                         done()
                     });
@@ -67,21 +70,22 @@ describe('API', function () {
         });
         describe('#UC-204- Update of a studenthouse', function () {
             it('#UC-204-1 should update a studenthouse', function (done) {
+                const house_data = {
+                    'name': faker.company.companyName(undefined),
+                    'street': faker.address.streetName(false),
+                    'housenumber': faker.datatype.number(),
+                    'postalcode': faker.address.zipCode(undefined),
+                    'city': faker.address.city(),
+                    'phonenumber': faker.phone.phoneNumber(undefined)
+                };
                 chai.request(app)
                     .put(`/api/studenthome/${collectedData.createdHouseId}`)
                     .type('form')
-                    .send({
-                        'name': 'Studenthouse 1',
-                        'street': 'Street',
-                        'housenumber': 32,
-                        'postalcode': '4811AC',
-                        'city': 'Breda',
-                        'phonenumber': '0622467104'
-                    })
+                    .send(house_data)
                     .end((err, res) => {
                         expect(res).to.have.status(202);
                         expect(res).to.have.property('body').to.have.property('success').to.equal(true);
-                        expect(res).to.have.property('body').to.have.property('house');
+                        expect(res).to.have.property('body').to.have.property('house').own.include(house_data);
                         collectedData.updatedHouse = res.body.house;
                         done()
                     });
@@ -94,7 +98,7 @@ describe('API', function () {
                     .end((err, res) => {
                         expect(res).to.have.status(202);
                         expect(res).to.have.property('body').to.have.property('success').to.equal(true);
-                        expect(res).to.have.property('body').to.have.property('id');
+                        expect(res).to.have.property('body').to.have.property('id').to.equal(collectedData.createdHouseId);
                         collectedData.deleteHouse = res.body.id;
                         done()
                     });

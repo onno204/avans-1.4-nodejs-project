@@ -1,54 +1,48 @@
-module.exports = {
-    db: [],
+const database = require("./database");
 
-    add(item, callback) {
-        this.db.push(item);
-        if (callback) {
-            callback(undefined, "success");
-        }
-    },
-
-    remove(id, callback) {
-        let found = false;
-        this.db.forEach(element => {
-            if (!found && element.id === id) {
-                found = true;
-                callback(undefined, element.id);
-            }
+exports.add = function (data, callback) {
+    database.con.query('INSERT INTO `studenthouses` (`name`, `street`, `housenumber`, `postalcode`, `city`, `phonenumber`) VALUES (?,?,?,?,?,?)',
+        [data.name, data.street, data.housenumber, data.postalcode, data.city, data.phonenumber], function (error, results, fields) {
+            if (error) return callback(error.sqlMessage, undefined);
+            if (results.affectedRows === 0) return callback("no-rows-affected", undefined);
+            callback(undefined, results.insertId);
         });
-        if (!found) {
+}
+
+exports.remove = function (id, callback) {
+    id = parseInt(id);
+    database.con.query('DELETE FROM `studenthouses` WHERE id=?',
+        [id], function (error, results, fields) {
+            if (error) return callback(error.sqlMessage, undefined);
+            if (results.affectedRows === 0) return callback("no-rows-affected", undefined);
+            callback(undefined, id);
+        });
+}
+
+exports.get = function (id, callback) {
+    database.con.query('SELECT * FROM studenthouses WHERE id = ?', [id], function (error, results, fields) {
+        if (error) return callback(error.sqlMessage, undefined);
+        if (results.length === 0) {
             return callback("house-not-found", undefined);
         }
-    },
+        callback(undefined, results[0]);
+    });
+}
 
-    get(id, callback) {
-        let found = false;
-        this.db.forEach(element => {
-            if (!found && element.id === id) {
-                found = true;
-                callback(undefined, element);
-            }
+exports.update = function (id, data, callback) {
+    database.con.query('UPDATE `studenthouses` SET `name`=?, `street`=?, `housenumber`=?, `postalcode`=?, `city`=?, `phonenumber`=? WHERE id=?',
+        [data.name, data.street, data.housenumber, data.postalcode, data.city, data.phonenumber, id], function (error, results, fields) {
+            if (error) return callback(error.sqlMessage, undefined);
+            if (results.affectedRows === 0) return callback("no-rows-affected", undefined);
+            //Return updated house
+            exports.get(id, callback);
         });
-        if (!found) {
-            return callback("house-not-found", undefined);
-        }
-    },
+}
 
-    update(id, data, callback) {
-        let found = false;
-        this.db.forEach(element => {
-            if (!found && element.id === id) {
-                element = data;
-                found = element;
-            }
-        });
-        if (found) {
-            return callback(undefined, found);
-        }
-        return callback("house-not-found", undefined);
-    },
+exports.getAll = function (callback) {
+    database.con.query('SELECT * FROM studenthouses', [], function (error, results, fields) {
+        if (error) return callback(error.sqlMessage, undefined);
+        callback(undefined, results);
+    });
+}
 
-    getAll(callback) {
-        callback(undefined, this.db);
-    },
-};

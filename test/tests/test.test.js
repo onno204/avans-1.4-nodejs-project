@@ -18,8 +18,64 @@ describe('API', function () {
                 });
         });
     });
-    describe('#UC-101- Register', function () {
-        it('#TC-101-1 should register a user without error', function (done) {
+    describe('#UC-101 Register', function () {
+        it('#TC-101-1 missing param', function (done) {
+            // Removed 'studentnumber' param
+            const register_data = {
+                'firstname': faker.name.firstName(undefined),
+                'lastname': faker.name.lastName(false),
+                'email_address': faker.internet.email(undefined),
+                'password': faker.internet.password()
+            };
+            chai.request(app)
+                .post('/api/register')
+                .type('form')
+                .send(register_data)
+                .end((err, res) => {
+                    expect(res).to.have.status(400);
+                    expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                    done()
+                });
+        });
+        it('#TC-101-2 invalid email', function (done) {
+            // Changed email_address to a firstname param
+            const register_data = {
+                'firstname': faker.name.firstName(undefined),
+                'lastname': faker.name.lastName(false),
+                'studentnumber': faker.datatype.number(),
+                'email_address': faker.name.firstName(undefined),
+                'password': faker.internet.password()
+            };
+            chai.request(app)
+                .post('/api/register')
+                .type('form')
+                .send(register_data)
+                .end((err, res) => {
+                    expect(res).to.have.status(400);
+                    expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                    done()
+                });
+        });
+        it('#TC-101-3 invalid password', function (done) {
+            // Changed the password to a very short one
+            const register_data = {
+                'firstname': faker.name.firstName(undefined),
+                'lastname': faker.name.lastName(false),
+                'studentnumber': faker.datatype.number(),
+                'email_address': faker.internet.email(undefined),
+                'password': faker.internet.password().substring(1, 4)
+            };
+            chai.request(app)
+                .post('/api/register')
+                .type('form')
+                .send(register_data)
+                .end((err, res) => {
+                    expect(res).to.have.status(400);
+                    expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                    done()
+                });
+        });
+        it('#TC-101-5 should register a user without error', function (done) {
             const register_data = {
                 'firstname': faker.name.firstName(undefined),
                 'lastname': faker.name.lastName(false),
@@ -41,35 +97,89 @@ describe('API', function () {
                     done()
                 });
         });
-    });
-    describe('User management', function () {
-        describe('#UC-101- Register', function () {
-            it('#TC-101-1 should register a user', function (done) {
-                const register_data = {
-                    'firstname': faker.name.firstName(undefined),
-                    'lastname': faker.name.lastName(false),
-                    'studentnumber': faker.datatype.number(),
-                    'email_address': faker.internet.email(undefined),
-                    'password': faker.internet.password()
-                };
-                chai.request(app)
-                    .post('/api/register')
-                    .type('form')
-                    .send(register_data)
-                    .end((err, res) => {
-                        expect(res).to.have.status(201);
-                        expect(res).to.have.property('body').to.have.property('success').to.equal(true);
-                        expect(res).to.have.property('body').to.have.property('token');
-                        collectedData.authToken = res.body.token;
-                        collectedData.userId = res.body.user_id;
-                        collectedData.registerData = register_data;
-                        done()
-                    });
-            });
+
+        // Make shure the users is registered first before executing this test
+        it('#TC-101-4 Register a duplicate email address', function (done) {
+            // The email_address of the previous registered user is used
+            const register_data = {
+                'firstname': faker.name.firstName(undefined),
+                'lastname': faker.name.lastName(false),
+                'studentnumber': faker.datatype.number(),
+                'email_address': collectedData.registerData.email_address,
+                'password': faker.internet.password()
+            };
+            chai.request(app)
+                .post('/api/register')
+                .type('form')
+                .send(register_data)
+                .end((err, res) => {
+                    expect(res).to.have.status(400);
+                    expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                    done()
+                });
         });
     });
-    describe('#UC-102- login', function () {
-        it('#TC-102-1 should login a user', function (done) {
+    describe('#UC-102 Login', function () {
+        it('#TC-102-1 Missing param', function (done) {
+            //Removed email param
+            chai.request(app)
+                .post('/api/login')
+                .type('form')
+                .send({
+                    'password': collectedData.registerData.password
+                })
+                .end((err, res) => {
+                    expect(res).to.have.status(400);
+                    expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                    done()
+                });
+        });
+        it('#TC-102-2 Invalid emaill', function (done) {
+            // Entered password twice
+            chai.request(app)
+                .post('/api/login')
+                .type('form')
+                .send({
+                    'email_address': collectedData.registerData.password,
+                    'password': collectedData.registerData.password
+                })
+                .end((err, res) => {
+                    expect(res).to.have.status(400);
+                    expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                    done()
+                });
+        });
+        it('#TC-102-3 Invalid password', function (done) {
+            // Entered a to short password
+            chai.request(app)
+                .post('/api/login')
+                .type('form')
+                .send({
+                    'email_address': collectedData.registerData.email_address,
+                    'password': collectedData.registerData.password.substring(0, 5)
+                })
+                .end((err, res) => {
+                    expect(res).to.have.status(400);
+                    expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                    done()
+                });
+        });
+        it('#TC-102-4 User does not exist', function (done) {
+            // Removed first character of email to simulate a typo
+            chai.request(app)
+                .post('/api/login')
+                .type('form')
+                .send({
+                    'email_address': collectedData.registerData.email_address.substring(1),
+                    'password': collectedData.registerData.password
+                })
+                .end((err, res) => {
+                    expect(res).to.have.status(400);
+                    expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                    done()
+                });
+        });
+        it('#TC-102-5 should login a user', function (done) {
             chai.request(app)
                 .post('/api/login')
                 .type('form')
@@ -87,15 +197,98 @@ describe('API', function () {
         });
     });
     describe('Studenthouse', function () {
-        describe('#UC-201- Create studenthouse', function () {
-            it('#TC-201-1 should create a studenthouse', function (done) {
+        describe('#UC-201 Create studenthouse', function () {
+            it('#TC-201-1 missing param', function (done) {
+                // removed street param
+                const house_data = {
+                    'name': faker.company.companyName(undefined),
+                    'housenumber': faker.datatype.number(),
+                    'postalcode': faker.address.zipCode(undefined),
+                    'city': faker.address.city(),
+                    'phonenumber': "+316 22467104"
+                };
+                chai.request(app)
+                    .post('/api/studenthome')
+                    .type('form')
+                    .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                    .send(house_data)
+                    .end((err, res) => {
+                        expect(res).to.have.status(400);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                        done()
+                    });
+            });
+            it('#TC-201-2 Invalid postalcode', function (done) {
+                // removed first char of postal code
+                const house_data = {
+                    'name': faker.company.companyName(undefined),
+                    'street': faker.address.streetName(false),
+                    'housenumber': faker.datatype.number(),
+                    'postalcode': faker.address.zipCode(undefined).substring(1),
+                    'city': faker.address.city(),
+                    'phonenumber': "+316 22467104"
+                };
+                chai.request(app)
+                    .post('/api/studenthome')
+                    .type('form')
+                    .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                    .send(house_data)
+                    .end((err, res) => {
+                        expect(res).to.have.status(400);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                        done()
+                    });
+            });
+            it('#TC-201-3 Invalid phonenumber', function (done) {
+                // Removed the +316- part of the phonenumber
                 const house_data = {
                     'name': faker.company.companyName(undefined),
                     'street': faker.address.streetName(false),
                     'housenumber': faker.datatype.number(),
                     'postalcode': faker.address.zipCode(undefined),
                     'city': faker.address.city(),
-                    'phonenumber': faker.phone.phoneNumber(undefined)
+                    'phonenumber': "22467104"
+                };
+                chai.request(app)
+                    .post('/api/studenthome')
+                    .type('form')
+                    .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                    .send(house_data)
+                    .end((err, res) => {
+                        expect(res).to.have.status(400);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                        done()
+                    });
+            });
+            it('#TC-201-5 Not signed in', function (done) {
+                // Removed authorization part
+                const house_data = {
+                    'name': faker.company.companyName(undefined),
+                    'street': faker.address.streetName(false),
+                    'housenumber': faker.datatype.number(),
+                    'postalcode': faker.address.zipCode(undefined),
+                    'city': faker.address.city(),
+                    'phonenumber': "+316 22467104"
+                };
+                chai.request(app)
+                    .post('/api/studenthome')
+                    .type('form')
+                    .send(house_data)
+                    .end((err, res) => {
+                        expect(res).to.have.status(401);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                        done()
+                    });
+            });
+
+            it('#TC-201-6 should create a studenthouse', function (done) {
+                const house_data = {
+                    'name': faker.company.companyName(undefined),
+                    'street': faker.address.streetName(false),
+                    'housenumber': faker.datatype.number(),
+                    'postalcode': faker.address.zipCode(undefined),
+                    'city': faker.address.city(),
+                    'phonenumber': "+316 22467104"
                 };
                 chai.request(app)
                     .post('/api/studenthome')
@@ -112,9 +305,88 @@ describe('API', function () {
                         done()
                     });
             });
+
+            // This should be after the creation of the original house to have a postalcode & housenumber
+            it('#TC-201-4 House at address already exists', function (done) {
+                // Replace housenumber&postalcode with previously created home data
+                const house_data = {
+                    'name': faker.company.companyName(undefined),
+                    'street': faker.address.streetName(false),
+                    'housenumber': collectedData.createdHouse.housenumber,
+                    'postalcode': collectedData.createdHouse.postalcode,
+                    'city': faker.address.city(),
+                    'phonenumber': "+316 22467104"
+                };
+                chai.request(app)
+                    .post('/api/studenthome')
+                    .type('form')
+                    .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                    .send(house_data)
+                    .end((err, res) => {
+                        expect(res).to.have.status(400);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                        done()
+                    });
+            });
         });
-        describe('#UC-202- List studenthouses', function () {
-            it('#TC-202-1 should list all student houses', function (done) {
+        describe('#UC-202 List studenthouses', function () {
+            // There is no specification on how to request zero houses so this is impossible
+            it('#TC-202-1 should list zero student houses', function (done) {
+                done()
+            });
+            // There is no specification on how to request two houses so this is impossible
+            it('#TC-202-2 should list two student houses', function (done) {
+                done()
+            });
+            it('#TC-202-3 search for non existing city', function (done) {
+                // Added city filter with a search on streetname
+                chai.request(app)
+                    .get(`/api/studenthome?city=${faker.address.streetName(false)}`)
+                    .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                    .end((err, res) => {
+                        expect(res).to.have.status(404);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                        done()
+                    });
+            });
+            it('#TC-202-4 search for non existing name', function (done) {
+                // Added name filter with a search on streetname
+                chai.request(app)
+                    .get(`/api/studenthome?name=${faker.address.streetName(false)}`)
+                    .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                    .end((err, res) => {
+                        expect(res).to.have.status(404);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                        done()
+                    });
+            });
+            it('#TC-202-5 should list all student houses in a city', function (done) {
+                chai.request(app)
+                    .get(`/api/studenthome?city=${collectedData.createdHouse.city}`)
+                    .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                    .end((err, res) => {
+                        expect(res).to.have.status(200);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(true);
+                        expect(res).to.have.property('body').to.have.property('houses');
+                        expect(res.body.houses.length >= 1).to.equal(true);
+                        done()
+                    });
+            });
+            it('#TC-202-6 should list all student houses with the name', function (done) {
+                chai.request(app)
+                    .get(`/api/studenthome?name=${collectedData.createdHouse.name}`)
+                    .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                    .end((err, res) => {
+                        expect(res).to.have.status(200);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(true);
+                        expect(res).to.have.property('body').to.have.property('houses');
+                        expect(res.body.houses.length >= 1).to.equal(true);
+                        done()
+                    });
+            });
+
+            //Non existing test case but it as a possible path so we take it
+            it('#TC-202-7 should list all student houses', function (done) {
                 chai.request(app)
                     .get('/api/studenthome')
                     .set({"Authorization": `Bearer ${collectedData.authToken}`})
@@ -151,7 +423,7 @@ describe('API', function () {
                     'housenumber': faker.datatype.number(),
                     'postalcode': faker.address.zipCode(undefined),
                     'city': faker.address.city(),
-                    'phonenumber': faker.phone.phoneNumber(undefined)
+                    'phonenumber': "+316 22467104"
                 };
                 chai.request(app)
                     .put(`/api/studenthome/${collectedData.createdHouse.id}`)
@@ -194,7 +466,7 @@ describe('API', function () {
                     'housenumber': faker.datatype.number(),
                     'postalcode': faker.address.zipCode(undefined),
                     'city': faker.address.city(),
-                    'phonenumber': faker.phone.phoneNumber(undefined)
+                    'phonenumber': "+316 22467104"
                 };
                 chai.request(app)
                     .post('/api/studenthome')

@@ -35,6 +35,18 @@ exports.verifyValue = function (value, type) {
         case 'date':
             success = regexTests.regexTestISODate(value);
             break;
+        case 'email':
+            success = regexTests.regexTestEmailAddress(value);
+            break;
+        case 'password':
+            success = value.length >= 8
+            break;
+        case 'postalcode':
+            success = regexTests.regexTestPostalcode(value);
+            break;
+        case 'phonenumber':
+            success = regexTests.regexTestPhonenumber(value);
+            break;
         default:
             success = typeof value === type;
             break;

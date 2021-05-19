@@ -49,9 +49,15 @@ exports.update = function (id, data, callback) {
         });
 }
 
-exports.getAll = function (callback) {
-    database.con.query('SELECT studenthouses.*, users.email_address AS user_email, CONCAT(users.firstname, \' \', users.lastname) AS user_fullname FROM studenthouses LEFT JOIN users ON studenthouses.user_id = users.id', [], function (error, results, fields) {
+exports.getAll = function (name, city,callback) {
+    const query_name = `${name ?? ""}%`;
+    const query_city = `${city ?? ""}%`;
+    database.con.query('SELECT studenthouses.*, users.email_address AS user_email, CONCAT(users.firstname, \' \', users.lastname) AS user_fullname FROM studenthouses LEFT JOIN users ON studenthouses.user_id = users.id WHERE studenthouses.city LIKE ? AND studenthouses.name LIKE ?',
+        [query_city, query_name], function (error, results, fields) {
         if (error) return callback(error.sqlMessage, undefined);
+        if (results.length === 0 && (name || city)) {
+            return callback("no-houses-matched-criteria", undefined);
+        }
         callback(undefined, results);
     });
 }

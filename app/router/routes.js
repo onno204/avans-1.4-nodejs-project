@@ -9,12 +9,16 @@ const meal_participants_controller = require('./controllers/mealParticipantsCont
 
 // middleware that is specific to this router
 router.use(function timeLog(req, res, next) {
-    logger.log(req.originalUrl, 'Time:', Date.now(), 'data:', JSON.stringify(req.body), 'params:', JSON.stringify(req.params))
+    logger.log(req.originalUrl, 'Time:', Date.now(), 'data:', JSON.stringify(req.body), 'query:', JSON.stringify(req.query), 'params:', JSON.stringify(req.params))
     next()
 });
 
 router.use(function timeLog(req, res, next) {
-    if (req._parsedUrl.path === "/info" || req._parsedUrl.path === "/register" || req._parsedUrl.path === "/login") {
+    if (req._parsedUrl.pathname === "/info" || req._parsedUrl.pathname === "/register" || req._parsedUrl.pathname === "/login") {
+        return next();
+    }
+
+    if ((req._parsedUrl.pathname === "/studenthome" || (req._parsedUrl.pathname.startsWith("/studenthome") && parseInt(req._parsedUrl.pathname.replace("/studenthome/", '')) >= 1)) && req.method === "GET") {
         return next();
     }
     logger.log("User authentication started");

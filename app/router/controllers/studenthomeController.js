@@ -1,3 +1,4 @@
+const meals_dao = require('./../../dao/meals_dao');
 const studenthouse_dao = require('./../../dao/studenthouse_dao');
 const request_utils = require('./../../utils/requestUtils');
 const logger = require('tracer').console()
@@ -8,9 +9,9 @@ exports.house_create_post = function (req, res) {
     let check = request_utils.verifyBody(req, res, 'name', 'string');
     check = check && request_utils.verifyBody(req, res, 'street', 'string');
     check = check && request_utils.verifyBody(req, res, 'housenumber', 'int');
-    check = check && request_utils.verifyBody(req, res, 'postalcode', 'string');
+    check = check && request_utils.verifyBody(req, res, 'postalcode', 'postalcode');
     check = check && request_utils.verifyBody(req, res, 'city', 'string');
-    check = check && request_utils.verifyBody(req, res, 'phonenumber', 'string');
+    check = check && request_utils.verifyBody(req, res, 'phonenumber', 'phonenumber');
     if (!check) {
         logger.log("Request cancelled because of an invalid param");
         return;
@@ -36,12 +37,12 @@ exports.house_create_post = function (req, res) {
 
 exports.house_all_get = function (req, res) {
     logger.log("Received request to get all studenthouses");
-    studenthouse_dao.getAll((err, res2) => {
+    studenthouse_dao.getAll(req.query.name, req.query.city, (err, res2) => {
         if (err) {
             logger.log("Error in listing:", err);
-            return res.status(400).send({"success": false, "error": err});
+            return res.status(404).send({"success": false, "error": err});
         }
-        logger.log("Returning houses list:", res2);
+        logger.log("Returning houses list:", JSON.stringify(res2));
         return res.status(200).send({"success": true, "houses": res2});
     })
 };
@@ -56,11 +57,17 @@ exports.house_details_get = function (req, res) {
 
     studenthouse_dao.get(req.params.homeId, (err, res2) => {
         if (err) {
-            logger.log("Error in details:", err);
-            return res.status(400).send({"success": false, "error": err});
+            logger.log("Error in house details:", err);
+            return res.status(404).send({"success": false, "error": err});
         }
-        logger.log("Returning house details:", res2);
-        return res.status(200).send({"success": true, "house": res2});
+        meals_dao.getAllMealsForHouse(req.params.homeId, (err3, res3) => {
+            if (err3) {
+                logger.log("Error in meal details:", err3);
+                return res.status(404).send({"success": false, "error": err});
+            }
+            logger.log("Returning house details:", JSON.stringify(res2));
+            return res.status(200).send({"success": true, "house": res2, "meals": res3});
+        });
     });
 };
 
@@ -69,9 +76,9 @@ exports.house_update_put = function (req, res) {
     let check = request_utils.verifyBody(req, res, 'name', 'string');
     check = check && request_utils.verifyBody(req, res, 'street', 'string');
     check = check && request_utils.verifyBody(req, res, 'housenumber', 'int');
-    check = check && request_utils.verifyBody(req, res, 'postalcode', 'string');
+    check = check && request_utils.verifyBody(req, res, 'postalcode', 'postalcode');
     check = check && request_utils.verifyBody(req, res, 'city', 'string');
-    check = check && request_utils.verifyBody(req, res, 'phonenumber', 'string');
+    check = check && request_utils.verifyBody(req, res, 'phonenumber', 'phonenumber');
     check = check && request_utils.verifyParam(req, res, 'homeId', 'string');
     if (!check) {
         logger.log("Request cancelled because of an invalid param");
@@ -110,18 +117,25 @@ exports.house_delete_delete = function (req, res) {
         logger.log("Request cancelled because of an invalid param");
         return;
     }
-    studenthouse_dao.checkIfUserIsAdmin(req.params.homeId, req.user_id, (err, user_verified) => {
+
+    studenthouse_dao.get(req.params.homeId, (err, res2) => {
         if (err) {
-            logger.log("Error in update:", err);
-            return res.status(401).send({"success": false, "error": err});
+            logger.log("Error in house removal:", err);
+            return res.status(404).send({"success": false, "error": err});
         }
-        studenthouse_dao.remove(req.params.homeId, (err, res2) => {
+        studenthouse_dao.checkIfUserIsAdmin(req.params.homeId, req.user_id, (err, user_verified) => {
             if (err) {
-                logger.log("Error in removing:", err);
-                return res.status(400).send({"success": false, "error": err});
+                logger.log("Error in update:", err);
+                return res.status(401).send({"success": false, "error": err});
             }
-            logger.log("House removed");
-            return res.status(202).send({"success": true, "id": res2});
+            studenthouse_dao.remove(req.params.homeId, (err, res2) => {
+                if (err) {
+                    logger.log("Error in removing:", err);
+                    return res.status(400).send({"success": false, "error": err});
+                }
+                logger.log("House removed");
+                return res.status(202).send({"success": true, "id": res2});
+            });
         });
     });
 };

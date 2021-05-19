@@ -4,7 +4,8 @@
   "description": "Avans school project",
   "main": "server.js",
   "scripts": {
-    "test": "cls && mocha -reporter spec test/**/*.test.js --exit",
+    "test": "mocha -reporter spec test/**/*.test.js --exit",
+    "test-win": "cls && npm run test",
     "coverage": "nyc --reporter=lcov npm run test",
     "sonar": "sonar-scanner",
     "upload-sonar": "npm run coverage && npm run sonar",

@@ -58,12 +58,12 @@ exports.house_details_get = function (req, res) {
     studenthouse_dao.get(req.params.homeId, (err, res2) => {
         if (err) {
             logger.log("Error in house details:", err);
-            return res.status(400).send({"success": false, "error": err});
+            return res.status(404).send({"success": false, "error": err});
         }
         meals_dao.getAllMealsForHouse(req.params.homeId, (err3, res3) => {
             if (err3) {
                 logger.log("Error in meal details:", err3);
-                return res.status(400).send({"success": false, "error": err3});
+                return res.status(404).send({"success": false, "error": err});
             }
             logger.log("Returning house details:", JSON.stringify(res2));
             return res.status(200).send({"success": true, "house": res2, "meals": res3});

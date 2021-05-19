@@ -399,14 +399,26 @@ describe('API', function () {
                     });
             });
         });
-        describe('#UC-203- Details of a studenthouse', function () {
-            it('#TC-203-1 should list details of a studenthouse', function (done) {
+        describe('#UC-203 Details of a studenthouse', function () {
+            it('#TC-203-1 Non existing studenthouse', function (done) {
+                // Changed houseId to a non existing one
+                chai.request(app)
+                    .get(`/api/studenthome/${faker.datatype.number()}`)
+                    .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                    .end((err, res) => {
+                        expect(res).to.have.status(404);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                        done()
+                    });
+            });
+            it('#TC-203-2 should list details of a studenthouse', function (done) {
                 chai.request(app)
                     .get(`/api/studenthome/${collectedData.createdHouse.id}`)
                     .set({"Authorization": `Bearer ${collectedData.authToken}`})
                     .end((err, res) => {
                         expect(res).to.have.status(200);
                         expect(res).to.have.property('body').to.have.property('success').to.equal(true);
+                        expect(res).to.have.property('body').to.have.property('meals');
                         expect(res).to.have.property('body').to.have.property('house').own.include(collectedData.createdHouse);
                         expect(res).to.have.property('body').to.have.property('house').to.have.property('user_email').to.equal(collectedData.registerData.email_address)
                         expect(res).to.have.property('body').to.have.property('house').to.have.property('user_fullname').to.equal(`${collectedData.registerData.firstname} ${collectedData.registerData.lastname}`);
@@ -415,8 +427,92 @@ describe('API', function () {
                     });
             });
         });
-        describe('#UC-204- Update of a studenthouse', function () {
-            it('#TC-204-1 should update a studenthouse', function (done) {
+        describe('#UC-204 Update of a studenthouse', function () {
+
+            it('#TC-204-1 missing param', function (done) {
+                // removed street param
+                const house_data = {
+                    'name': faker.company.companyName(undefined),
+                    'housenumber': faker.datatype.number(),
+                    'postalcode': faker.address.zipCode(undefined),
+                    'city': faker.address.city(),
+                    'phonenumber': "+316 22467104"
+                };
+                chai.request(app)
+                    .put(`/api/studenthome/${collectedData.createdHouse.id}`)
+                    .type('form')
+                    .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                    .send(house_data)
+                    .end((err, res) => {
+                        expect(res).to.have.status(400);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                        done()
+                    });
+            });
+            it('#TC-204-2 Invalid postalcode', function (done) {
+                // removed first char of postal code
+                const house_data = {
+                    'name': faker.company.companyName(undefined),
+                    'street': faker.address.streetName(false),
+                    'housenumber': faker.datatype.number(),
+                    'postalcode': faker.address.zipCode(undefined).substring(1),
+                    'city': faker.address.city(),
+                    'phonenumber': "+316 22467104"
+                };
+                chai.request(app)
+                    .put(`/api/studenthome/${collectedData.createdHouse.id}`)
+                    .type('form')
+                    .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                    .send(house_data)
+                    .end((err, res) => {
+                        expect(res).to.have.status(400);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                        done()
+                    });
+            });
+            it('#TC-204-3 Invalid phonenumber', function (done) {
+                // Removed the +316- part of the phonenumber
+                const house_data = {
+                    'name': faker.company.companyName(undefined),
+                    'street': faker.address.streetName(false),
+                    'housenumber': faker.datatype.number(),
+                    'postalcode': faker.address.zipCode(undefined),
+                    'city': faker.address.city(),
+                    'phonenumber': "22467104"
+                };
+                chai.request(app)
+                    .put(`/api/studenthome/${collectedData.createdHouse.id}`)
+                    .type('form')
+                    .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                    .send(house_data)
+                    .end((err, res) => {
+                        expect(res).to.have.status(400);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                        done()
+                    });
+            });
+            it('#TC-204-5 Not signed in', function (done) {
+                // Removed authorization part
+                const house_data = {
+                    'name': faker.company.companyName(undefined),
+                    'street': faker.address.streetName(false),
+                    'housenumber': faker.datatype.number(),
+                    'postalcode': faker.address.zipCode(undefined),
+                    'city': faker.address.city(),
+                    'phonenumber': "+316 22467104"
+                };
+                chai.request(app)
+                    .put(`/api/studenthome/${collectedData.createdHouse.id}`)
+                    .type('form')
+                    .send(house_data)
+                    .end((err, res) => {
+                        expect(res).to.have.status(401);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                        done()
+                    });
+            });
+
+            it('#TC-204-6 should update a studenthouse', function (done) {
                 const house_data = {
                     'name': faker.company.companyName(undefined),
                     'street': faker.address.streetName(false),

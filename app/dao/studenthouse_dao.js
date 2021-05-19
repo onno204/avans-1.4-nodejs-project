@@ -5,7 +5,7 @@ exports.add = function (data, callback) {
         [data.name, data.street, data.housenumber, data.postalcode, data.city, data.phonenumber, data.user_id], function (error, results, fields) {
             if (error) return callback(error.sqlMessage, undefined);
             if (results.affectedRows === 0) return callback("no-rows-affected", undefined);
-            callback(undefined, results.insertId);
+            exports.get(results.insertId, callback);
         });
 }
 
@@ -20,7 +20,7 @@ exports.remove = function (id, callback) {
 }
 
 exports.get = function (id, callback) {
-    database.con.query('SELECT * FROM studenthouses WHERE id = ?', [id], function (error, results, fields) {
+    database.con.query('SELECT studenthouses.*, users.email_address AS user_email, CONCAT(users.firstname, \' \', users.lastname) AS user_fullname FROM studenthouses LEFT JOIN users ON studenthouses.user_id = users.id WHERE studenthouses.id = ?', [id], function (error, results, fields) {
         if (error) return callback(error.sqlMessage, undefined);
         if (results.length === 0) {
             return callback("house-not-found", undefined);
@@ -30,7 +30,7 @@ exports.get = function (id, callback) {
 }
 
 exports.checkIfUserIsAdmin = function (id, user_id, callback) {
-    database.con.query('SELECT * FROM studenthouses WHERE id = ? AND user_id = ?', [id, user_id], function (error, results, fields) {
+    database.con.query('SELECT studenthouses.*, users.email_address AS user_email, CONCAT(users.firstname, \' \', users.lastname) AS user_fullname FROM studenthouses LEFT JOIN users ON studenthouses.user_id = users.id WHERE studenthouses.id = ? AND studenthouses.user_id = ?', [id, user_id], function (error, results, fields) {
         if (error) return callback(error.sqlMessage, undefined);
         if (results.length === 0) {
             return callback("house-not-owned-by-user", undefined);
@@ -50,7 +50,7 @@ exports.update = function (id, data, callback) {
 }
 
 exports.getAll = function (callback) {
-    database.con.query('SELECT * FROM studenthouses', [], function (error, results, fields) {
+    database.con.query('SELECT studenthouses.*, users.email_address AS user_email, CONCAT(users.firstname, \' \', users.lastname) AS user_fullname FROM studenthouses LEFT JOIN users ON studenthouses.user_id = users.id', [], function (error, results, fields) {
         if (error) return callback(error.sqlMessage, undefined);
         callback(undefined, results);
     });

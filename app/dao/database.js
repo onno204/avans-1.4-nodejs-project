@@ -14,7 +14,3 @@ exports.con.connect(function(err) {
     console.log("Connected!");
     logger.log("Database connected with id:", exports.con.threadId);
 });
-// database.con.query('SELECT * FROM users WHERE id = ?', [userId], function (error, results, fields) {
-//     if (error) throw error;
-//     // ...
-// });

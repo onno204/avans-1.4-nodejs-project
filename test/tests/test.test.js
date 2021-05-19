@@ -105,9 +105,10 @@ describe('API', function () {
                     .end((err, res) => {
                         expect(res).to.have.status(201);
                         expect(res).to.have.property('body').to.have.property('success').to.equal(true);
-                        expect(res).to.have.property('body').to.have.property('id');
-                        collectedData.createdHouse = house_data;
-                        collectedData.createdHouseId = res.body.id;
+                        expect(res).to.have.property('body').to.have.property('house').own.include(house_data);
+                        expect(res).to.have.property('body').to.have.property('house').to.have.property('user_email').to.equal(collectedData.registerData.email_address)
+                        expect(res).to.have.property('body').to.have.property('house').to.have.property('user_fullname').to.equal(`${collectedData.registerData.firstname} ${collectedData.registerData.lastname}`);
+                        collectedData.createdHouse = res.body.house;
                         done()
                     });
             });
@@ -129,12 +130,14 @@ describe('API', function () {
         describe('#UC-203- Details of a studenthouse', function () {
             it('#TC-203-1 should list details of a studenthouse', function (done) {
                 chai.request(app)
-                    .get(`/api/studenthome/${collectedData.createdHouseId}`)
+                    .get(`/api/studenthome/${collectedData.createdHouse.id}`)
                     .set({"Authorization": `Bearer ${collectedData.authToken}`})
                     .end((err, res) => {
                         expect(res).to.have.status(200);
                         expect(res).to.have.property('body').to.have.property('success').to.equal(true);
                         expect(res).to.have.property('body').to.have.property('house').own.include(collectedData.createdHouse);
+                        expect(res).to.have.property('body').to.have.property('house').to.have.property('user_email').to.equal(collectedData.registerData.email_address)
+                        expect(res).to.have.property('body').to.have.property('house').to.have.property('user_fullname').to.equal(`${collectedData.registerData.firstname} ${collectedData.registerData.lastname}`);
                         collectedData.houseDetails = res.body.house;
                         done()
                     });
@@ -151,7 +154,7 @@ describe('API', function () {
                     'phonenumber': faker.phone.phoneNumber(undefined)
                 };
                 chai.request(app)
-                    .put(`/api/studenthome/${collectedData.createdHouseId}`)
+                    .put(`/api/studenthome/${collectedData.createdHouse.id}`)
                     .set({"Authorization": `Bearer ${collectedData.authToken}`})
                     .type('form')
                     .send(house_data)
@@ -159,6 +162,8 @@ describe('API', function () {
                         expect(res).to.have.status(202);
                         expect(res).to.have.property('body').to.have.property('success').to.equal(true);
                         expect(res).to.have.property('body').to.have.property('house').own.include(house_data);
+                        expect(res).to.have.property('body').to.have.property('house').to.have.property('user_email').to.equal(collectedData.registerData.email_address)
+                        expect(res).to.have.property('body').to.have.property('house').to.have.property('user_fullname').to.equal(`${collectedData.registerData.firstname} ${collectedData.registerData.lastname}`);
                         collectedData.updatedHouse = res.body.house;
                         done()
                     });
@@ -168,12 +173,12 @@ describe('API', function () {
             if (alsoDelete) {
                 it('#TC-205-1 should delete a studenthouse', function (done) {
                     chai.request(app)
-                        .del(`/api/studenthome/${collectedData.createdHouseId}`)
+                        .del(`/api/studenthome/${collectedData.createdHouse.id}`)
                         .set({"Authorization": `Bearer ${collectedData.authToken}`})
                         .end((err, res) => {
                             expect(res).to.have.status(202);
                             expect(res).to.have.property('body').to.have.property('success').to.equal(true);
-                            expect(res).to.have.property('body').to.have.property('id').to.equal(collectedData.createdHouseId);
+                            expect(res).to.have.property('body').to.have.property('id').to.equal(collectedData.createdHouse.id);
                             collectedData.deleteHouse = res.body.id;
                             done()
                         });
@@ -182,7 +187,7 @@ describe('API', function () {
         });
         describe('#UC-301 Creation of a meal', function () {
             // Create a student house for testing
-            it('#TC-201-1 should create a studenthouse', function (done) {
+            it('#TC-301-0 should create a studenthouse used for meal testing', function (done) {
                 const house_data = {
                     'name': faker.company.companyName(undefined),
                     'street': faker.address.streetName(false),
@@ -199,9 +204,10 @@ describe('API', function () {
                     .end((err, res) => {
                         expect(res).to.have.status(201);
                         expect(res).to.have.property('body').to.have.property('success').to.equal(true);
-                        expect(res).to.have.property('body').to.have.property('id');
-                        collectedData.createdHouse = house_data;
-                        collectedData.createdHouseId = res.body.id;
+                        expect(res).to.have.property('body').to.have.property('house').own.include(house_data);
+                        expect(res).to.have.property('body').to.have.property('house').to.have.property('user_email').to.equal(collectedData.registerData.email_address)
+                        expect(res).to.have.property('body').to.have.property('house').to.have.property('user_fullname').to.equal(`${collectedData.registerData.firstname} ${collectedData.registerData.lastname}`);
+                        collectedData.createdHouse = res.body.house;
                         done()
                     });
             });
@@ -218,7 +224,7 @@ describe('API', function () {
                     'offered_since': date.toISOString()
                 };
                 chai.request(app)
-                    .post(`/api/studenthome/${collectedData.createdHouseId}/meal/`)
+                    .post(`/api/studenthome/${collectedData.createdHouse.id}/meal/`)
                     .set({"Authorization": `Bearer ${collectedData.authToken}`})
                     .type('form')
                     .send(meal_data)
@@ -226,6 +232,8 @@ describe('API', function () {
                         expect(res).to.have.status(201);
                         expect(res).to.have.property('body').to.have.property('success').to.equal(true);
                         expect(res).to.have.property('body').to.have.property('meal').own.include(meal_data);
+                        expect(res).to.have.property('body').to.have.property('meal').to.have.property('user_email').to.equal(collectedData.registerData.email_address)
+                        expect(res).to.have.property('body').to.have.property('meal').to.have.property('user_fullname').to.equal(`${collectedData.registerData.firstname} ${collectedData.registerData.lastname}`);
                         collectedData.createdMeal = res.body.meal;
                         done()
                     });
@@ -244,7 +252,7 @@ describe('API', function () {
                     'offered_since': date.toISOString()
                 };
                 chai.request(app)
-                    .put(`/api/studenthome/${collectedData.createdHouseId}/meal/${collectedData.createdMeal.id}`)
+                    .put(`/api/studenthome/${collectedData.createdHouse.id}/meal/${collectedData.createdMeal.id}`)
                     .set({"Authorization": `Bearer ${collectedData.authToken}`})
                     .type('form')
                     .send(meal_data)
@@ -252,6 +260,8 @@ describe('API', function () {
                         expect(res).to.have.status(202);
                         expect(res).to.have.property('body').to.have.property('success').to.equal(true);
                         expect(res).to.have.property('body').to.have.property('meal').own.include(meal_data);
+                        expect(res).to.have.property('body').to.have.property('meal').to.have.property('user_email').to.equal(collectedData.registerData.email_address)
+                        expect(res).to.have.property('body').to.have.property('meal').to.have.property('user_fullname').to.equal(`${collectedData.registerData.firstname} ${collectedData.registerData.lastname}`);
                         collectedData.createdMeal = res.body.meal;
                         done()
                     });
@@ -261,7 +271,7 @@ describe('API', function () {
         describe('#UC-202- List meals', function () {
             it('#TC-202-1 should list all meals', function (done) {
                 chai.request(app)
-                    .get('/api/studenthome/${collectedData.createdHouseId}/meal/')
+                    .get('/api/studenthome/${collectedData.createdHouse.id}/meal/')
                     .set({"Authorization": `Bearer ${collectedData.authToken}`})
                     .end((err, res) => {
                         expect(res).to.have.status(200);
@@ -275,12 +285,14 @@ describe('API', function () {
         describe('#UC-203- Details of a meal', function () {
             it('#TC-203-1 should list details of a meal', function (done) {
                 chai.request(app)
-                    .get(`/api/studenthome/${collectedData.createdHouseId}/meal/${collectedData.createdMeal.id}`)
+                    .get(`/api/studenthome/${collectedData.createdHouse.id}/meal/${collectedData.createdMeal.id}`)
                     .set({"Authorization": `Bearer ${collectedData.authToken}`})
                     .end((err, res) => {
                         expect(res).to.have.status(200);
                         expect(res).to.have.property('body').to.have.property('success').to.equal(true);
                         expect(res).to.have.property('body').to.have.property('meal').own.include(collectedData.createdMeal);
+                        expect(res).to.have.property('body').to.have.property('meal').to.have.property('user_email').to.equal(collectedData.registerData.email_address)
+                        expect(res).to.have.property('body').to.have.property('meal').to.have.property('user_fullname').to.equal(`${collectedData.registerData.firstname} ${collectedData.registerData.lastname}`);
                         collectedData.mealDetails = res.body.meal;
                         done()
                     });
@@ -290,7 +302,7 @@ describe('API', function () {
             if (alsoDelete) {
                 it('#TC-305-1 should delete a meal', function (done) {
                     chai.request(app)
-                        .del(`/api/studenthome/${collectedData.createdHouseId}/meal/${collectedData.createdMeal.id}`)
+                        .del(`/api/studenthome/${collectedData.createdHouse.id}/meal/${collectedData.createdMeal.id}`)
                         .set({"Authorization": `Bearer ${collectedData.authToken}`})
                         .end((err, res) => {
                             expect(res).to.have.status(202);

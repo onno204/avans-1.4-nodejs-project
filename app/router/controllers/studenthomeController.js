@@ -29,8 +29,8 @@ exports.house_create_post = function (req, res) {
             logger.log("Error in creation:", err2);
             return res.status(400).send({"success": false, "error": err2});
         }
-        logger.log("Studenthouse created with id", res2);
-        return res.status(201).send({"success": true, "id": res2});
+        logger.log("Studenthouse created with data", res2);
+        return res.status(201).send({"success": true, "house": res2});
     })
 };
 

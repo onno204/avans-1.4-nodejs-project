@@ -537,7 +537,7 @@ describe('API', function () {
                     });
             });
         });
-        describe('#UC-205- Delete a studenthouse', function () {
+        describe('#UC-205 Delete a studenthouse', function () {
             if (alsoDelete) {
                 it('#TC-205-0 Register a user to simulate another user', function (done) {
                     const register_data = {
@@ -635,8 +635,51 @@ describe('API', function () {
                 });
         });
         describe('#UC-301 Creation of a meal', function () {
-
-            it('#TC-301-1 Should create a meal', function (done) {
+            it('#TC-301-1 missing param', function (done) {
+                // Removed name param
+                const date = faker.date.past(undefined, undefined);
+                date.setMilliseconds(0);
+                const meal_data = {
+                    'description': faker.commerce.productDescription(),
+                    'price': faker.datatype.number(),
+                    'allergies': JSON.stringify([faker.commerce.productMaterial(), faker.commerce.productMaterial()]),
+                    'ingredients': JSON.stringify([faker.animal.cow(), faker.animal.horse(), faker.animal.fish(), faker.animal.rabbit()]),
+                    'offered_since': date.toISOString()
+                };
+                chai.request(app)
+                    .post(`/api/studenthome/${collectedData.createdHouse.id}/meal/`)
+                    .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                    .type('form')
+                    .send(meal_data)
+                    .end((err, res) => {
+                        expect(res).to.have.status(400);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                        done()
+                    });
+            });
+            it('#TC-301-2 missing authorization', function (done) {
+                // Removed authorization header
+                const date = faker.date.past(undefined, undefined);
+                date.setMilliseconds(0);
+                const meal_data = {
+                    'name': faker.commerce.productName(),
+                    'description': faker.commerce.productDescription(),
+                    'price': faker.datatype.number(),
+                    'allergies': JSON.stringify([faker.commerce.productMaterial(), faker.commerce.productMaterial()]),
+                    'ingredients': JSON.stringify([faker.animal.cow(), faker.animal.horse(), faker.animal.fish(), faker.animal.rabbit()]),
+                    'offered_since': date.toISOString()
+                };
+                chai.request(app)
+                    .post(`/api/studenthome/${collectedData.createdHouse.id}/meal/`)
+                    .type('form')
+                    .send(meal_data)
+                    .end((err, res) => {
+                        expect(res).to.have.status(401);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                        done()
+                    });
+            });
+            it('#TC-301-3 Should create a meal', function (done) {
                 const date = faker.date.past(undefined, undefined);
                 date.setMilliseconds(0);
                 const meal_data = {
@@ -664,7 +707,101 @@ describe('API', function () {
             });
         });
         describe('#UC-302 update of a meal', function () {
-            it('#TC-302-1 Should update a meal', function (done) {
+            it('#TC-302-1 missing param', function (done) {
+                // Removed description param
+                const date = faker.date.past(undefined, undefined);
+                date.setMilliseconds(0);
+                const meal_data = {
+                    'name': faker.commerce.productName(),
+                    'price': faker.datatype.number(),
+                    'allergies': JSON.stringify([faker.commerce.productMaterial(), faker.commerce.productMaterial()]),
+                    'ingredients': JSON.stringify([faker.animal.cow(), faker.animal.horse(), faker.animal.fish(), faker.animal.rabbit()]),
+                    'offered_since': date.toISOString()
+                };
+                chai.request(app)
+                    .put(`/api/studenthome/${collectedData.createdHouse.id}/meal/${collectedData.createdMeal.id}`)
+                    .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                    .type('form')
+                    .send(meal_data)
+                    .end((err, res) => {
+                        expect(res).to.have.status(400);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                        done()
+                    });
+            });
+
+            it('#TC-302-2 Not signed in', function (done) {
+                // Removed authorization header
+                const date = faker.date.past(undefined, undefined);
+                date.setMilliseconds(0);
+                const meal_data = {
+                    'name': faker.commerce.productName(),
+                    'description': faker.commerce.productDescription(),
+                    'price': faker.datatype.number(),
+                    'allergies': JSON.stringify([faker.commerce.productMaterial(), faker.commerce.productMaterial()]),
+                    'ingredients': JSON.stringify([faker.animal.cow(), faker.animal.horse(), faker.animal.fish(), faker.animal.rabbit()]),
+                    'offered_since': date.toISOString()
+                };
+                chai.request(app)
+                    .put(`/api/studenthome/${collectedData.createdHouse.id}/meal/${collectedData.createdMeal.id}`)
+                    .type('form')
+                    .send(meal_data)
+                    .end((err, res) => {
+                        expect(res).to.have.status(401);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                        done()
+                    });
+            });
+
+            it('#TC-302-3 not the owner of the meal', function (done) {
+                // Changed authorization header
+                const date = faker.date.past(undefined, undefined);
+                date.setMilliseconds(0);
+                const meal_data = {
+                    'name': faker.commerce.productName(),
+                    'description': faker.commerce.productDescription(),
+                    'price': faker.datatype.number(),
+                    'allergies': JSON.stringify([faker.commerce.productMaterial(), faker.commerce.productMaterial()]),
+                    'ingredients': JSON.stringify([faker.animal.cow(), faker.animal.horse(), faker.animal.fish(), faker.animal.rabbit()]),
+                    'offered_since': date.toISOString()
+                };
+                chai.request(app)
+                    .put(`/api/studenthome/${collectedData.createdHouse.id}/meal/${collectedData.createdMeal.id}`)
+                    .set({"Authorization": `Bearer ${collectedData.authToken2}`})
+                    .type('form')
+                    .send(meal_data)
+                    .end((err, res) => {
+                        expect(res).to.have.status(401);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                        done()
+                    });
+            });
+
+            it('#TC-302-4 Meal does not exist', function (done) {
+                // Randopm mealId
+                const date = faker.date.past(undefined, undefined);
+                date.setMilliseconds(0);
+                const meal_data = {
+                    'name': faker.commerce.productName(),
+                    'description': faker.commerce.productDescription(),
+                    'price': faker.datatype.number(),
+                    'allergies': JSON.stringify([faker.commerce.productMaterial(), faker.commerce.productMaterial()]),
+                    'ingredients': JSON.stringify([faker.animal.cow(), faker.animal.horse(), faker.animal.fish(), faker.animal.rabbit()]),
+                    'offered_since': date.toISOString()
+                };
+                chai.request(app)
+                    .put(`/api/studenthome/${collectedData.createdHouse.id}/meal/${faker.datatype.number()}`)
+                    .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                    .type('form')
+                    .send(meal_data)
+                    .end((err, res) => {
+                        expect(res).to.have.status(404);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                        done()
+                    });
+            });
+
+            it('#TC-302-5 Should update a meal', function (done) {
                 const date = faker.date.past(undefined, undefined);
                 date.setMilliseconds(0);
                 const meal_data = {

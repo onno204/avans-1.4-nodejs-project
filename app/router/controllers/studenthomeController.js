@@ -1,53 +1,41 @@
-
 const studenthouse_dao = require('./../../dao/studenthouse_dao');
+const request_utils = require('./../../utils/requestUtils');
 const logger = require('tracer').console()
 
 
-exports.house_create_post = function(req, res) {
-    logger.log("Creating student house");
-    const body = req.body;
-    if (typeof body.name !== 'string') {
-        logger.log("Studenthouse Creation failed at name");
-        return res.status(400).send('Missing param: name');
-    }
-    if (typeof body.street !== 'string') {
-        logger.log("Studenthouse Creation failed at street");
-        return res.status(400).send('Missing param: street');
-    }
-    body.housenumber = parseInt(body.housenumber);
-    if (isNaN(body.housenumber)) {
-        logger.log("Studenthouse Creation failed at housenumber");
-        return res.status(400).send('Missing param: housenumber');
-    }
-    if (typeof body.postalcode !== 'string') {
-        logger.log("Studenthouse Creation failed at postalcode");
-        return res.status(400).send('Missing param: postalcode');
-    }
-    if (typeof body.city !== 'string') {
-        logger.log("Studenthouse Creation failed at city");
-        return res.status(400).send('Missing param: city');
-    }
-    if (typeof body.phonenumber !== 'string') {
-        logger.log("Studenthouse Creation failed at phonenumber");
-        return res.status(400).send('Missing param: phonenumber');
+exports.house_create_post = function (req, res) {
+    logger.log("Received request to create a studenthome");
+    let check = request_utils.verifyBody(req, res, 'name', 'string');
+    check = check && request_utils.verifyBody(req, res, 'street', 'string');
+    check = check && request_utils.verifyBody(req, res, 'housenumber', 'int');
+    check = check && request_utils.verifyBody(req, res, 'postalcode', 'string');
+    check = check && request_utils.verifyBody(req, res, 'city', 'string');
+    check = check && request_utils.verifyBody(req, res, 'phonenumber', 'string');
+    if (!check) {
+        logger.log("Request cancelled because of an invalid param");
+        return;
     }
 
-    const token =  Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     studenthouse_dao.add({
-        id: token,
-        name: body.name,
-        street: body.street,
-        housenumber: body.housenumber,
-        postalcode: body.postalcode,
-        city: body.city,
-        phonenumber: body.phonenumber,
+        name: req.body.name,
+        street: req.body.street,
+        housenumber: req.body.housenumber,
+        postalcode: req.body.postalcode,
+        city: req.body.city,
+        phonenumber: req.body.phonenumber,
+        user_id: req.user_id
+    }, (err2, res2) => {
+        if (err2) {
+            logger.log("Error in creation:", err2);
+            return res.status(400).send({"success": false, "error": err2});
+        }
+        logger.log("Studenthouse created with data", res2);
+        return res.status(201).send({"success": true, "house": res2});
     })
-    logger.log("Studenthouse created with id", token);
-    return res.status(201).send({"success": true, "id": token});
 };
 
-exports.house_all_get = function(req, res) {
-    logger.log("Requesting student houses");
+exports.house_all_get = function (req, res) {
+    logger.log("Received request to get all studenthouses");
     studenthouse_dao.getAll((err, res2) => {
         if (err) {
             logger.log("Error in listing:", err);
@@ -58,89 +46,82 @@ exports.house_all_get = function(req, res) {
     })
 };
 
-exports.house_details_get = function(req, res) {
-    logger.log("Requesting studenthouse details");
-    const params = req.params;
-    if (typeof params.homeId !== 'string') {
-        logger.log("Studenthouse request failed at homeId");
-        return res.status(400).send('Missing URL param: homeId');
+exports.house_details_get = function (req, res) {
+    logger.log("Received request for house details");
+    let check = request_utils.verifyParam(req, res, 'homeId', 'string');
+    if (!check) {
+        logger.log("Request cancelled because of an invalid param");
+        return;
     }
-    studenthouse_dao.get(params.homeId, (err, res2) => {
+
+    studenthouse_dao.get(req.params.homeId, (err, res2) => {
         if (err) {
             logger.log("Error in details:", err);
             return res.status(400).send({"success": false, "error": err});
         }
         logger.log("Returning house details:", res2);
         return res.status(200).send({"success": true, "house": res2});
-    })
+    });
 };
 
-exports.house_update_put = function(req, res) {
-    logger.log("Updating student house");
-    const params = req.params;
-    if (typeof params.homeId !== 'string') {
-        logger.log("Studenthouse request failed at homeId");
-        return res.status(400).send('Missing URL param: homeId');
-    }
-    const body = req.body;
-    if (typeof body.name !== 'string') {
-        logger.log("Studenthouse Update failed at name");
-        return res.status(400).send('Missing param: name');
-    }
-    if (typeof body.street !== 'string') {
-        logger.log("Studenthouse Update failed at street");
-        return res.status(400).send('Missing param: street');
-    }
-    body.housenumber = parseInt(body.housenumber);
-    if (isNaN(body.housenumber)) {
-        logger.log("Studenthouse Update failed at housenumber");
-        return res.status(400).send('Missing param: housenumber');
-    }
-    if (typeof body.postalcode !== 'string') {
-        logger.log("Studenthouse Update failed at postalcode");
-        return res.status(400).send('Missing param: postalcode');
-    }
-    if (typeof body.city !== 'string') {
-        logger.log("Studenthouse Update failed at city");
-        return res.status(400).send('Missing param: city');
-    }
-    if (typeof body.phonenumber !== 'string') {
-        logger.log("Studenthouse Update failed at phonenumber");
-        return res.status(400).send('Missing param: phonenumber');
+exports.house_update_put = function (req, res) {
+    logger.log("Received request to update a student house");
+    let check = request_utils.verifyBody(req, res, 'name', 'string');
+    check = check && request_utils.verifyBody(req, res, 'street', 'string');
+    check = check && request_utils.verifyBody(req, res, 'housenumber', 'int');
+    check = check && request_utils.verifyBody(req, res, 'postalcode', 'string');
+    check = check && request_utils.verifyBody(req, res, 'city', 'string');
+    check = check && request_utils.verifyBody(req, res, 'phonenumber', 'string');
+    check = check && request_utils.verifyParam(req, res, 'homeId', 'string');
+    if (!check) {
+        logger.log("Request cancelled because of an invalid param");
+        return;
     }
 
-    logger.log("Studenthouse update with id", params.homeId);
-    studenthouse_dao.update(params.homeId, {
-        id: params.homeId,
-        name: body.name,
-        street: body.street,
-        housenumber: body.housenumber,
-        postalcode: body.postalcode,
-        city: body.city,
-        phonenumber: body.phonenumber,
-    }, (err, res2) => {
+    logger.log("Studenthouse update with id", req.params.homeId);
+    studenthouse_dao.checkIfUserIsAdmin(req.params.homeId, req.user_id, (err, user_verified) => {
         if (err) {
             logger.log("Error in update:", err);
-            return res.status(400).send({"success": false, "error": err});
+            return res.status(401).send({"success": false, "error": err});
         }
-        logger.log("Returning updated house:", res2);
-        return res.status(202).send({"success": true, "house": res2});
-    })
+        studenthouse_dao.update(req.params.homeId, {
+            id: req.params.homeId,
+            name: req.body.name,
+            street: req.body.street,
+            housenumber: req.body.housenumber,
+            postalcode: req.body.postalcode,
+            city: req.body.city,
+            phonenumber: req.body.phonenumber,
+        }, (err, res2) => {
+            if (err) {
+                logger.log("Error in update:", err);
+                return res.status(400).send({"success": false, "error": err});
+            }
+            logger.log("Update house successfully");
+            return res.status(202).send({"success": true, "house": res2});
+        });
+    });
 };
 
-exports.house_delete_delete = function(req, res) {
-    logger.log("Requesting deletion of studenthouse");
-    const params = req.params;
-    if (typeof params.homeId !== 'string') {
-        logger.log("Studenthouse delete request failed at homeId");
-        return res.status(400).send('Missing URL param: homeId');
+exports.house_delete_delete = function (req, res) {
+    logger.log("Received request to delete a user house");
+    let check = request_utils.verifyParam(req, res, 'homeId', 'string');
+    if (!check) {
+        logger.log("Request cancelled because of an invalid param");
+        return;
     }
-    studenthouse_dao.remove(params.homeId, (err, res2) => {
+    studenthouse_dao.checkIfUserIsAdmin(req.params.homeId, req.user_id, (err, user_verified) => {
         if (err) {
-            logger.log("Error in removing:", err);
-            return res.status(400).send({"success": false, "error": err});
+            logger.log("Error in update:", err);
+            return res.status(401).send({"success": false, "error": err});
         }
-        logger.log("Returning removed house id:", res2);
-        return res.status(202).send({"success": true, "id": res2});
-    })
+        studenthouse_dao.remove(req.params.homeId, (err, res2) => {
+            if (err) {
+                logger.log("Error in removing:", err);
+                return res.status(400).send({"success": false, "error": err});
+            }
+            logger.log("House removed");
+            return res.status(202).send({"success": true, "id": res2});
+        });
+    });
 };

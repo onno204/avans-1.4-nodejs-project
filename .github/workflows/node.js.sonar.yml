@@ -11,6 +11,13 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      DATABASE_ADDRESS: ${{ secrets.DATABASE_ADDRESS }}
+      DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME }}
+      DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+      DATABASE_DATABASE: ${{ secrets.DATABASE_DATABASE }}
+      AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
 
     strategy:
       matrix:

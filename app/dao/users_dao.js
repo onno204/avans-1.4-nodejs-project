@@ -39,3 +39,14 @@ exports.generateNewToken = function (email, user_id, callback) {
             });
     });
 }
+
+
+exports.get = function (id, callback) {
+    database.con.query('SELECT * FROM users WHERE users.id = ?', [id], function (error, results, fields) {
+        if (error) return callback(error.sqlMessage, undefined);
+        if (results.length === 0) {
+            return callback("user-not-found", undefined);
+        }
+        callback(undefined, results[0]);
+    });
+}

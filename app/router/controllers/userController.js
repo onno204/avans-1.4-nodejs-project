@@ -27,7 +27,7 @@ exports.register = function (req, res) {
             return res.status(400).send({"success": false, "error": err2});
         }
         logger.log("User created with token", res2);
-        return res.status(201).send({"success": true, "token": res2});
+        return res.status(201).send({"success": true, "token": res2.token, "user_id": res2.user_id});
     })
 };
 
@@ -46,6 +46,6 @@ exports.login = function (req, res) {
             return res.status(400).send({"success": false, "error": err2});
         }
         logger.log("User logged in with token", res2);
-        return res.status(201).send({"success": true, "token": res2});
+        return res.status(201).send({"success": true, "token": res2.token, "user_id": res2.user_id});
     })
 };

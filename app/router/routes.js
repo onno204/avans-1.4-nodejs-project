@@ -9,7 +9,7 @@ const meal_participants_controller = require('./controllers/mealParticipantsCont
 
 // middleware that is specific to this router
 router.use(function timeLog(req, res, next) {
-    logger.log(req.originalUrl, 'Time:', Date.now(), 'data:', JSON.stringify(req.body))
+    logger.log(req.originalUrl, 'Time:', Date.now(), 'data:', JSON.stringify(req.body), 'params:', JSON.stringify(req.params))
     next()
 });
 
@@ -25,7 +25,7 @@ router.use(function timeLog(req, res, next) {
         if (err) return res.status(401).send({"success": false, "error": "Unauthorized"});
         req.user_email = decoded.user_email;
         req.user_id = decoded.user_id;
-        logger.log("User success:", decoded);
+        logger.log("User authorization success:", JSON.stringify(decoded));
         next();
     });
 });

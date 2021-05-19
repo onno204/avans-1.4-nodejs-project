@@ -1,5 +1,6 @@
 const meals_dao = require('./../../dao/meals_dao');
 const studenthouse_dao = require('./../../dao/studenthouse_dao');
+const users_dao = require('./../../dao/users_dao');
 const request_utils = require('./../../utils/requestUtils');
 const logger = require('tracer').console()
 
@@ -139,3 +140,35 @@ exports.house_delete_delete = function (req, res) {
         });
     });
 };
+
+exports.house_add_user_put = function (req, res) {
+    logger.log("Received request to add a user to the student house");
+    let check = request_utils.verifyBody(req, res, 'userId', 'string');
+    if (!check) {
+        logger.log("Request cancelled because of an invalid param");
+        return;
+    }
+
+    logger.log("Studenthouse adding user with id", req.params.homeId);
+    studenthouse_dao.get(req.params.homeId, (err, res2) => {
+        if (err) {
+            logger.log("Error in adding user1:", err);
+            return res.status(404).send({"success": false, "error": err});
+        }
+        users_dao.get(req.body.userId, (err, user_verified) => {
+            if (err) {
+                logger.log("Error in adding user2:", err);
+                return res.status(404).send({"success": false, "error": err});
+            }
+            studenthouse_dao.addUserToHouse(req.params.homeId, req.body.userId, (err4, user_verified) => {
+                if (err4) {
+                    logger.log("Error in adding user3:", err4);
+                    return res.status(401).send({"success": false, "error": err4});
+                }
+                logger.log("Update house successfully");
+                return res.status(202).send({"success": true, "house": res2});
+            });
+        });
+    });
+};
+

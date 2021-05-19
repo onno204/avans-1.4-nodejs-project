@@ -33,7 +33,14 @@ exports.checkIfUserIsAdmin = function (id, user_id, callback) {
     database.con.query('SELECT studenthouses.*, users.email_address AS user_email, CONCAT(users.firstname, \' \', users.lastname) AS user_fullname FROM studenthouses LEFT JOIN users ON studenthouses.user_id = users.id WHERE studenthouses.id = ? AND studenthouses.user_id = ?', [id, user_id], function (error, results, fields) {
         if (error) return callback(error.sqlMessage, undefined);
         if (results.length === 0) {
-            return callback("house-not-owned-by-user", undefined);
+            database.con.query('SELECT * FROM users_studenthouses WHERE users_studenthouses.studenthouseId = ? AND users_studenthouses.userId = ?', [id, user_id], function (error, results, fields) {
+                if (error) return callback(error.sqlMessage, undefined);
+                if (results.length === 0) {
+                    return callback("house-not-owned-by-user", undefined);
+                }
+                callback(undefined, results[0]);
+            });
+            return;
         }
         callback(undefined, results[0]);
     });
@@ -59,6 +66,15 @@ exports.getAll = function (name, city, callback) {
                 return callback("no-houses-matched-criteria", undefined);
             }
             callback(undefined, results);
+        });
+}
+
+exports.addUserToHouse = function (id, user_id, callback) {
+    database.con.query('INSERT INTO `users_studenthouses` (`studenthouseId`, `userId`) VALUES (?,?)',
+        [id, user_id], function (error, results, fields) {
+            if (error) return callback(error.sqlMessage, undefined);
+            if (results.affectedRows === 0) return callback("no-rows-affected", undefined);
+            exports.get(id, callback);
         });
 }
 

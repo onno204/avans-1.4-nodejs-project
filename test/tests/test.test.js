@@ -5,6 +5,8 @@ const faker = require('faker/locale/nl');
 chai.use(require('chai-http'));
 
 const collectedData = {};
+
+//If disabled it is possible to seed the database with some data
 const alsoDelete = true;
 
 describe('API', function () {
@@ -606,6 +608,118 @@ describe('API', function () {
                         });
                 });
             }
+        });
+
+        describe('#UC-206 add permissions to a studenthouse', function () {
+            it('#TC-206-0 should create a studenthouse used for meal testing', function (done) {
+                const house_data = {
+                    'name': faker.company.companyName(undefined),
+                    'street': faker.address.streetName(false),
+                    'housenumber': faker.datatype.number(),
+                    'postalcode': faker.address.zipCode(undefined),
+                    'city': faker.address.city(),
+                    'phonenumber': "+316 22467104"
+                };
+                chai.request(app)
+                    .post('/api/studenthome')
+                    .type('form')
+                    .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                    .send(house_data)
+                    .end((err, res) => {
+                        expect(res).to.have.status(201);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(true);
+                        expect(res).to.have.property('body').to.have.property('house').own.include(house_data);
+                        expect(res).to.have.property('body').to.have.property('house').to.have.property('user_email').to.equal(collectedData.registerData.email_address)
+                        expect(res).to.have.property('body').to.have.property('house').to.have.property('user_fullname').to.equal(`${collectedData.registerData.firstname} ${collectedData.registerData.lastname}`);
+                        collectedData.createdHouse = res.body.house;
+                        done()
+                    });
+            });
+            it('#TC-206-0 Register a user to simulate another user', function (done) {
+                const register_data = {
+                    'firstname': faker.name.firstName(undefined),
+                    'lastname': faker.name.lastName(false),
+                    'studentnumber': faker.datatype.number(),
+                    'email_address': faker.internet.email(undefined),
+                    'password': faker.internet.password()
+                };
+                chai.request(app)
+                    .post('/api/register')
+                    .type('form')
+                    .send(register_data)
+                    .end((err, res) => {
+                        expect(res).to.have.status(201);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(true);
+                        expect(res).to.have.property('body').to.have.property('token');
+                        collectedData.authToken3 = res.body.token;
+                        collectedData.userId3 = res.body.user_id;
+                        collectedData.registerData3 = register_data;
+                        done()
+                    });
+            });
+            it('#TC-206-1 not signedin', function (done) {
+                // Removed auth header
+                const user_data = {
+                    'userId': collectedData.userId3
+                };
+                chai.request(app)
+                    .put(`/api/studenthome/${collectedData.createdHouse.id}/user`)
+                    .type('form')
+                    .send(user_data)
+                    .end((err, res) => {
+                        expect(res).to.have.status(401);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                        done()
+                    });
+            });
+            it('#TC-206-2 user not found', function (done) {
+                // changed user id
+                const user_data = {
+                    'userId': faker.datatype.number()
+                };
+                chai.request(app)
+                    .put(`/api/studenthome/${collectedData.createdHouse.id}/user`)
+                    .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                    .type('form')
+                    .send(user_data)
+                    .end((err, res) => {
+                        expect(res).to.have.status(404);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                        done()
+                    });
+            });
+            it('#TC-206-2 student house not found', function (done) {
+                // changed hgouse id
+                const user_data = {
+                    'userId': collectedData.userId3
+                };
+                chai.request(app)
+                    .put(`/api/studenthome/${faker.datatype.number()}/user`)
+                    .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                    .type('form')
+                    .send(user_data)
+                    .end((err, res) => {
+                        expect(res).to.have.status(404);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                        done()
+                    });
+            });
+
+            it('#TC-206-4 should update a studenthouse', function (done) {
+                const user_data = {
+                    'userId': collectedData.userId3
+                };
+                chai.request(app)
+                    .put(`/api/studenthome/${collectedData.createdHouse.id}/user`)
+                    .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                    .type('form')
+                    .send(user_data)
+                    .end((err, res) => {
+                        expect(res).to.have.status(202);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(true);
+                        done()
+                    });
+            });
         });
     });
     describe('Studenthouse Meals', function () {

@@ -5,7 +5,7 @@ exports.verifyParam = function (req, res, paramName, paramType) {
     const success = exports.verifyValue(req.params[paramName], paramType);
     if (!success) {
         logger.log("Param", paramName, "was missing or not of type", paramType);
-        res.status(400).send('Missing param: ' + paramName);
+        res.status(400).send({"success": false, "error": "Missing param " + paramName + " or not of type " + paramType});
         return false;
     }
     return true;
@@ -15,7 +15,7 @@ exports.verifyBody = function (req, res, paramName, paramType) {
     const success = exports.verifyValue(req.body[paramName], paramType);
     if (!success) {
         logger.log("Body", paramName, "was missing or not of type", paramType);
-        res.status(400).send('Missing body: ' + paramName);
+        res.status(400).send({"success": false, "error": "Missing param " + paramName + " or not of type " + paramType});
         return false;
     }
     return true;

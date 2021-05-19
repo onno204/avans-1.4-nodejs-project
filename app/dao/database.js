@@ -1,18 +1,12 @@
 const logger = require('tracer').console()
 const mysql = require('mysql');
-
-const credentials = {
-    address: "onno204.nl",
-    username: "avans_1.4_samen_eten",
-    password: "Xwty*j1r88A4-7QM",
-    database: "avans_1.4_samen_eten",
-}
+const config = require('./../config');
 
 exports.con = mysql.createConnection({
-    host: credentials.address,
-    user: credentials.username,
-    password: credentials.password,
-    database: credentials.database
+    host: config.database.address,
+    user: config.database.username,
+    password: config.database.password,
+    database: config.database.database
 });
 
 exports.con.connect(function(err) {

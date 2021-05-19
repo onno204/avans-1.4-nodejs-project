@@ -3,7 +3,6 @@ const router = express.Router();
 const config = require('./../config');
 const jwt = require('jsonwebtoken');
 const logger = require('tracer').console()
-
 const user_controller = require('./controllers/userController');
 const meal_participants_controller = require('./controllers/mealParticipantsController.js');
 

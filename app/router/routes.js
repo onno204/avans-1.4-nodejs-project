@@ -21,6 +21,7 @@ router.use(function timeLog(req, res, next) {
     if ((req._parsedUrl.pathname === "/studenthome" || (req._parsedUrl.pathname.startsWith("/studenthome") && parseInt(req._parsedUrl.pathname.replace("/studenthome/", '')) >= 1)) && req.method === "GET") {
         return next();
     }
+
     logger.log("User authentication started");
     const token = (req.header("authorization") ?? "").replace('Bearer ', '');
     console.log("token: ", token);

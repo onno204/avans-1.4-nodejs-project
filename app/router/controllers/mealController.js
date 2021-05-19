@@ -81,15 +81,54 @@ exports.update_put = function (req, res) {
 
 exports.delete = function (req, res) {
     logger.log("Received request to delete meal");
-    return res.status(500).send({"success": false, "error": "not implemented yet"});
+    let check = request_utils.verifyParam(req, res, 'homeId', 'string');
+    if (!check) {
+        logger.log("Request cancelled because of an invalid param");
+        return;
+    }
+    logger.log("meal removing with id", req.params.mealId);
+    meals_dao.checkIfUserIsAdmin(req.params.mealId, req.user_id, (err, user_verified) => {
+        if (err) {
+            logger.log("Error in removal:", err);
+            return res.status(401).send({"success": false, "error": err});
+        }
+        meals_dao.remove(req.params.mealId, (err, res2) => {
+            if (err) {
+                logger.log("Error in removal:", err);
+                return res.status(400).send({"success": false, "error": err});
+            }
+            logger.log("Removed meal successfully");
+            return res.status(202).send({"success": true, "id": res2});
+        });
+    });
 };
 
 exports.get_all_get = function (req, res) {
     logger.log("Received request to get all meals");
-    return res.status(500).send({"success": false, "error": "not implemented yet"});
+    meals_dao.getAll((err, res2) => {
+        if (err) {
+            logger.log("Error in listing:", err);
+            return res.status(400).send({"success": false, "error": err});
+        }
+        logger.log("Returning meals list:", res2);
+        return res.status(200).send({"success": true, "meals": res2});
+    })
 };
 
 exports.get_meal_details_get = function (req, res) {
     logger.log("Received request to get details about a meal");
-    return res.status(500).send({"success": false, "error": "not implemented yet"});
+    let check = request_utils.verifyParam(req, res, 'mealId', 'string');
+    if (!check) {
+        logger.log("Request cancelled because of an invalid param");
+        return;
+    }
+
+    meals_dao.get(req.params.mealId, (err, res2) => {
+        if (err) {
+            logger.log("Error in details:", err);
+            return res.status(400).send({"success": false, "error": err});
+        }
+        logger.log("Returning meal details:", res2);
+        return res.status(200).send({"success": true, "meal": res2});
+    });
 };

@@ -257,6 +257,51 @@ describe('API', function () {
                     });
             });
         });
+
+        describe('#UC-202- List meals', function () {
+            it('#TC-202-1 should list all meals', function (done) {
+                chai.request(app)
+                    .get('/api/studenthome/${collectedData.createdHouseId}/meal/')
+                    .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                    .end((err, res) => {
+                        expect(res).to.have.status(200);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(true);
+                        expect(res).to.have.property('body').to.have.property('meals');
+                        collectedData.listMeals = res.body.meals;
+                        done()
+                    });
+            });
+        });
+        describe('#UC-203- Details of a meal', function () {
+            it('#TC-203-1 should list details of a meal', function (done) {
+                chai.request(app)
+                    .get(`/api/studenthome/${collectedData.createdHouseId}/meal/${collectedData.createdMeal.id}`)
+                    .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                    .end((err, res) => {
+                        expect(res).to.have.status(200);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(true);
+                        expect(res).to.have.property('body').to.have.property('meal').own.include(collectedData.createdMeal);
+                        collectedData.mealDetails = res.body.meal;
+                        done()
+                    });
+            });
+        });
+        describe('#UC-305- Delete a meal', function () {
+            if (alsoDelete) {
+                it('#TC-305-1 should delete a meal', function (done) {
+                    chai.request(app)
+                        .del(`/api/studenthome/${collectedData.createdHouseId}/meal/${collectedData.createdMeal.id}`)
+                        .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                        .end((err, res) => {
+                            expect(res).to.have.status(202);
+                            expect(res).to.have.property('body').to.have.property('success').to.equal(true);
+                            expect(res).to.have.property('body').to.have.property('id').to.equal(collectedData.createdMeal.id);
+                            collectedData.deleteHouse = res.body.id;
+                            done()
+                        });
+                });
+            }
+        });
     });
 });
 

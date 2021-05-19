@@ -14,10 +14,20 @@ exports.get = function (id, callback) {
     database.con.query('SELECT * FROM meals WHERE id = ?', [id], function (error, results, fields) {
         if (error) return callback(error.sqlMessage, undefined);
         if (results.length === 0) {
-            return callback("house-not-found", undefined);
+            return callback("meal-not-found", undefined);
         }
         callback(undefined, results[0]);
     });
+}
+
+exports.remove = function (id, callback) {
+    id = parseInt(id);
+    database.con.query('DELETE FROM `meals` WHERE id=?',
+        [id], function (error, results, fields) {
+            if (error) return callback(error.sqlMessage, undefined);
+            if (results.affectedRows === 0) return callback("no-rows-affected", undefined);
+            callback(undefined, id);
+        });
 }
 
 exports.update = function (id, data, callback) {
@@ -37,5 +47,12 @@ exports.checkIfUserIsAdmin = function (id, user_id, callback) {
             return callback("meal-not-owned-by-user", undefined);
         }
         callback(undefined, results[0]);
+    });
+}
+
+exports.getAll = function (callback) {
+    database.con.query('SELECT * FROM meals', [], function (error, results, fields) {
+        if (error) return callback(error.sqlMessage, undefined);
+        callback(undefined, results);
     });
 }

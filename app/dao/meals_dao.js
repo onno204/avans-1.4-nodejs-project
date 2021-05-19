@@ -56,3 +56,11 @@ exports.getAll = function (callback) {
         callback(undefined, results);
     });
 }
+
+
+exports.getAllMealsForHouse = function (houseId, callback) {
+    database.con.query('SELECT meals.*, users.email_address AS user_email, CONCAT(users.firstname, \' \', users.lastname) AS user_fullname FROM meals LEFT JOIN users ON meals.user_id = users.id WHERE meals.studenthouse_id = ?', [houseId], function (error, results, fields) {
+        if (error) return callback(error.sqlMessage, undefined);
+        callback(undefined, results);
+    });
+}

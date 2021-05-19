@@ -36,7 +36,7 @@ exports.create_post = function (req, res) {
                 logger.log("Error in creating meal:", err2);
                 return res.status(400).send({"success": false, "error": err2});
             }
-            logger.log("Meal created with id:", res2);
+            logger.log("Meal created:", JSON.stringify(res2));
             return res.status(201).send({"success": true, "meal": res2});
         });
     });
@@ -56,25 +56,31 @@ exports.update_put = function (req, res) {
     }
 
     logger.log("meal update with id", req.params.mealId);
-    meals_dao.checkIfUserIsAdmin(req.params.mealId, req.user_id, (err, user_verified) => {
+    meals_dao.get(req.params.mealId, (err, res2) => {
         if (err) {
             logger.log("Error in update:", err);
-            return res.status(401).send({"success": false, "error": err});
+            return res.status(404).send({"success": false, "error": err});
         }
-        meals_dao.update(req.params.mealId, {
-            name: req.body.name,
-            description: req.body.description,
-            price: req.body.price,
-            allergies: req.body.allergies,
-            ingredients: req.body.ingredients,
-            offered_since: new Date(req.body.offered_since),
-        }, (err, res2) => {
+        meals_dao.checkIfUserIsAdmin(req.params.mealId, req.user_id, (err, user_verified) => {
             if (err) {
                 logger.log("Error in update:", err);
-                return res.status(400).send({"success": false, "error": err});
+                return res.status(401).send({"success": false, "error": err});
             }
-            logger.log("Updated meal successfully");
-            return res.status(202).send({"success": true, "meal": res2});
+            meals_dao.update(req.params.mealId, {
+                name: req.body.name,
+                description: req.body.description,
+                price: req.body.price,
+                allergies: req.body.allergies,
+                ingredients: req.body.ingredients,
+                offered_since: new Date(req.body.offered_since),
+            }, (err, res2) => {
+                if (err) {
+                    logger.log("Error in update:", err);
+                    return res.status(400).send({"success": false, "error": err});
+                }
+                logger.log("Updated meal successfully with data", JSON.stringify(res2));
+                return res.status(202).send({"success": true, "meal": res2});
+            });
         });
     });
 };
@@ -87,18 +93,24 @@ exports.delete = function (req, res) {
         return;
     }
     logger.log("meal removing with id", req.params.mealId);
-    meals_dao.checkIfUserIsAdmin(req.params.mealId, req.user_id, (err, user_verified) => {
+    meals_dao.get(req.params.mealId, (err, res2) => {
         if (err) {
-            logger.log("Error in removal:", err);
-            return res.status(401).send({"success": false, "error": err});
+            logger.log("Error in update:", err);
+            return res.status(404).send({"success": false, "error": err});
         }
-        meals_dao.remove(req.params.mealId, (err, res2) => {
+        meals_dao.checkIfUserIsAdmin(req.params.mealId, req.user_id, (err, user_verified) => {
             if (err) {
                 logger.log("Error in removal:", err);
-                return res.status(400).send({"success": false, "error": err});
+                return res.status(401).send({"success": false, "error": err});
             }
-            logger.log("Removed meal successfully");
-            return res.status(202).send({"success": true, "id": res2});
+            meals_dao.remove(req.params.mealId, (err, res2) => {
+                if (err) {
+                    logger.log("Error in removal:", err);
+                    return res.status(400).send({"success": false, "error": err});
+                }
+                logger.log("Removed meal successfully");
+                return res.status(202).send({"success": true, "id": res2});
+            });
         });
     });
 };
@@ -110,7 +122,7 @@ exports.get_all_get = function (req, res) {
             logger.log("Error in listing:", err);
             return res.status(400).send({"success": false, "error": err});
         }
-        logger.log("Returning meals list:", res2);
+        logger.log("Returning meals list:", JSON.stringify(res2));
         return res.status(200).send({"success": true, "meals": res2});
     })
 };
@@ -126,9 +138,9 @@ exports.get_meal_details_get = function (req, res) {
     meals_dao.get(req.params.mealId, (err, res2) => {
         if (err) {
             logger.log("Error in details:", err);
-            return res.status(400).send({"success": false, "error": err});
+            return res.status(404).send({"success": false, "error": err});
         }
-        logger.log("Returning meal details:", res2);
+        logger.log("Returning meal details:", JSON.stringify(res2));
         return res.status(200).send({"success": true, "meal": res2});
     });
 };

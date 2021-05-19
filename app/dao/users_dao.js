@@ -5,7 +5,7 @@ const crypto = require('crypto');
 
 
 exports.add = function (data, callback) {
-    jwt.sign({data: data.email_address}, config.auth.secret, { expiresIn: '1h' }, (err, res) => {
+    jwt.sign({data: data.email_address}, config.auth.secret, {expiresIn: '1h'}, (err, res) => {
         if (err) return callback("error-while-creating-token", undefined);
         const hashed = crypto.createHash('sha256').update(data.password).digest('base64');
         database.con.query('INSERT INTO `users` (`token`, `firstname`, `lastname`, `studentnumber`, `email_address`, `password`) VALUES (?,?,?,?,?,?)',
@@ -29,7 +29,7 @@ exports.login = function (email, password, callback) {
 }
 
 exports.generateNewToken = function (email, user_id, callback) {
-    jwt.sign({user_email: email, user_id: user_id}, config.auth.secret, { expiresIn: '1h' }, (err, res) => {
+    jwt.sign({user_email: email, user_id: user_id}, config.auth.secret, {expiresIn: '1h'}, (err, res) => {
         if (err) return callback("error-while-creating-token", undefined);
         database.con.query('UPDATE `users` SET `token`=? WHERE email_address=? AND id=?',
             [res, email, user_id], function (error, results, fields) {

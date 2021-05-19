@@ -8,8 +8,8 @@ exports.register = function (req, res) {
     let check = request_utils.verifyBody(req, res, 'firstname', 'string');
     check = check && request_utils.verifyBody(req, res, 'lastname', 'string');
     check = check && request_utils.verifyBody(req, res, 'studentnumber', 'int');
-    check = check && request_utils.verifyBody(req, res, 'email_address', 'string');
-    check = check && request_utils.verifyBody(req, res, 'password', 'string');
+    check = check && request_utils.verifyBody(req, res, 'email_address', 'email');
+    check = check && request_utils.verifyBody(req, res, 'password', 'password');
     if (!check) {
         logger.log("Request cancelled because of an invalid param");
         return;
@@ -33,8 +33,8 @@ exports.register = function (req, res) {
 
 exports.login = function (req, res) {
     logger.log("Received request to log user in");
-    let check = request_utils.verifyBody(req, res, 'email_address', 'string');
-    check = check && request_utils.verifyBody(req, res, 'password', 'string');
+    let check = request_utils.verifyBody(req, res, 'email_address', 'email');
+    check = check && request_utils.verifyBody(req, res, 'password', 'password');
     if (!check) {
         logger.log("Request cancelled because of an invalid param");
         return;

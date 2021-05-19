@@ -539,7 +539,61 @@ describe('API', function () {
         });
         describe('#UC-205- Delete a studenthouse', function () {
             if (alsoDelete) {
-                it('#TC-205-1 should delete a studenthouse', function (done) {
+                it('#TC-205-0 Register a user to simulate another user', function (done) {
+                    const register_data = {
+                        'firstname': faker.name.firstName(undefined),
+                        'lastname': faker.name.lastName(false),
+                        'studentnumber': faker.datatype.number(),
+                        'email_address': faker.internet.email(undefined),
+                        'password': faker.internet.password()
+                    };
+                    chai.request(app)
+                        .post('/api/register')
+                        .type('form')
+                        .send(register_data)
+                        .end((err, res) => {
+                            expect(res).to.have.status(201);
+                            expect(res).to.have.property('body').to.have.property('success').to.equal(true);
+                            expect(res).to.have.property('body').to.have.property('token');
+                            collectedData.authToken2 = res.body.token;
+                            collectedData.userId2 = res.body.user_id;
+                            collectedData.registerData2 = register_data;
+                            done()
+                        });
+                });
+
+                it('#TC-205-1 Non existing house', function (done) {
+                    chai.request(app)
+                        .del(`/api/studenthome/${faker.datatype.number()}`)
+                        .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                        .end((err, res) => {
+                            expect(res).to.have.status(404);
+                            expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                            done()
+                        });
+                });
+                it('#TC-205-2 Auhtorization missing', function (done) {
+                    // Removed authorization header
+                    chai.request(app)
+                        .del(`/api/studenthome/${collectedData.createdHouse.id}`)
+                        .end((err, res) => {
+                            expect(res).to.have.status(401);
+                            expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                            done()
+                        });
+                });
+                it('#TC-205-3 Actor is not the owner', function (done) {
+                    // Changed authorization header
+                    chai.request(app)
+                        .del(`/api/studenthome/${collectedData.createdHouse.id}`)
+                        .set({"Authorization": `Bearer ${collectedData.authToken2}`})
+                        .end((err, res) => {
+                            expect(res).to.have.status(401);
+                            expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                            done()
+                        });
+                });
+                it('#TC-205-4 should delete a studenthouse', function (done) {
                     chai.request(app)
                         .del(`/api/studenthome/${collectedData.createdHouse.id}`)
                         .set({"Authorization": `Bearer ${collectedData.authToken}`})
@@ -553,32 +607,34 @@ describe('API', function () {
                 });
             }
         });
+    });
+    describe('Studenthouse Meals', function () {
+        // Create a student house for testing since the last one was deleted
+        it('#TC-300-0 should create a studenthouse used for meal testing', function (done) {
+            const house_data = {
+                'name': faker.company.companyName(undefined),
+                'street': faker.address.streetName(false),
+                'housenumber': faker.datatype.number(),
+                'postalcode': faker.address.zipCode(undefined),
+                'city': faker.address.city(),
+                'phonenumber': "+316 22467104"
+            };
+            chai.request(app)
+                .post('/api/studenthome')
+                .type('form')
+                .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                .send(house_data)
+                .end((err, res) => {
+                    expect(res).to.have.status(201);
+                    expect(res).to.have.property('body').to.have.property('success').to.equal(true);
+                    expect(res).to.have.property('body').to.have.property('house').own.include(house_data);
+                    expect(res).to.have.property('body').to.have.property('house').to.have.property('user_email').to.equal(collectedData.registerData.email_address)
+                    expect(res).to.have.property('body').to.have.property('house').to.have.property('user_fullname').to.equal(`${collectedData.registerData.firstname} ${collectedData.registerData.lastname}`);
+                    collectedData.createdHouse = res.body.house;
+                    done()
+                });
+        });
         describe('#UC-301 Creation of a meal', function () {
-            // Create a student house for testing
-            it('#TC-301-0 should create a studenthouse used for meal testing', function (done) {
-                const house_data = {
-                    'name': faker.company.companyName(undefined),
-                    'street': faker.address.streetName(false),
-                    'housenumber': faker.datatype.number(),
-                    'postalcode': faker.address.zipCode(undefined),
-                    'city': faker.address.city(),
-                    'phonenumber': "+316 22467104"
-                };
-                chai.request(app)
-                    .post('/api/studenthome')
-                    .type('form')
-                    .set({"Authorization": `Bearer ${collectedData.authToken}`})
-                    .send(house_data)
-                    .end((err, res) => {
-                        expect(res).to.have.status(201);
-                        expect(res).to.have.property('body').to.have.property('success').to.equal(true);
-                        expect(res).to.have.property('body').to.have.property('house').own.include(house_data);
-                        expect(res).to.have.property('body').to.have.property('house').to.have.property('user_email').to.equal(collectedData.registerData.email_address)
-                        expect(res).to.have.property('body').to.have.property('house').to.have.property('user_fullname').to.equal(`${collectedData.registerData.firstname} ${collectedData.registerData.lastname}`);
-                        collectedData.createdHouse = res.body.house;
-                        done()
-                    });
-            });
 
             it('#TC-301-1 Should create a meal', function (done) {
                 const date = faker.date.past(undefined, undefined);

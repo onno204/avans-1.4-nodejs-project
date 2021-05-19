@@ -117,18 +117,25 @@ exports.house_delete_delete = function (req, res) {
         logger.log("Request cancelled because of an invalid param");
         return;
     }
-    studenthouse_dao.checkIfUserIsAdmin(req.params.homeId, req.user_id, (err, user_verified) => {
+
+    studenthouse_dao.get(req.params.homeId, (err, res2) => {
         if (err) {
-            logger.log("Error in update:", err);
-            return res.status(401).send({"success": false, "error": err});
+            logger.log("Error in house removal:", err);
+            return res.status(404).send({"success": false, "error": err});
         }
-        studenthouse_dao.remove(req.params.homeId, (err, res2) => {
+        studenthouse_dao.checkIfUserIsAdmin(req.params.homeId, req.user_id, (err, user_verified) => {
             if (err) {
-                logger.log("Error in removing:", err);
-                return res.status(400).send({"success": false, "error": err});
+                logger.log("Error in update:", err);
+                return res.status(401).send({"success": false, "error": err});
             }
-            logger.log("House removed");
-            return res.status(202).send({"success": true, "id": res2});
+            studenthouse_dao.remove(req.params.homeId, (err, res2) => {
+                if (err) {
+                    logger.log("Error in removing:", err);
+                    return res.status(400).send({"success": false, "error": err});
+                }
+                logger.log("House removed");
+                return res.status(202).send({"success": true, "id": res2});
+            });
         });
     });
 };

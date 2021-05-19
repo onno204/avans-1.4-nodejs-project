@@ -9,7 +9,7 @@ exports.con = mysql.createConnection({
     database: config.database.database
 });
 
-exports.con.connect(function(err) {
+exports.con.connect(function (err) {
     if (err) throw err;
     console.log("Connected!");
     logger.log("Database connected with id:", exports.con.threadId);

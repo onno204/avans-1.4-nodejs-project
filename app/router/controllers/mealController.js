@@ -93,18 +93,24 @@ exports.delete = function (req, res) {
         return;
     }
     logger.log("meal removing with id", req.params.mealId);
-    meals_dao.checkIfUserIsAdmin(req.params.mealId, req.user_id, (err, user_verified) => {
+    meals_dao.get(req.params.mealId, (err, res2) => {
         if (err) {
-            logger.log("Error in removal:", err);
-            return res.status(401).send({"success": false, "error": err});
+            logger.log("Error in update:", err);
+            return res.status(404).send({"success": false, "error": err});
         }
-        meals_dao.remove(req.params.mealId, (err, res2) => {
+        meals_dao.checkIfUserIsAdmin(req.params.mealId, req.user_id, (err, user_verified) => {
             if (err) {
                 logger.log("Error in removal:", err);
-                return res.status(400).send({"success": false, "error": err});
+                return res.status(401).send({"success": false, "error": err});
             }
-            logger.log("Removed meal successfully");
-            return res.status(202).send({"success": true, "id": res2});
+            meals_dao.remove(req.params.mealId, (err, res2) => {
+                if (err) {
+                    logger.log("Error in removal:", err);
+                    return res.status(400).send({"success": false, "error": err});
+                }
+                logger.log("Removed meal successfully");
+                return res.status(202).send({"success": true, "id": res2});
+            });
         });
     });
 };

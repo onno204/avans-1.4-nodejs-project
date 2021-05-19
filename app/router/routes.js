@@ -18,7 +18,7 @@ router.use(function timeLog(req, res, next) {
         return next();
     }
 
-    if((req._parsedUrl.pathname === "/studenthome" || (req._parsedUrl.pathname.startsWith("/studenthome") && parseInt(req._parsedUrl.pathname.replace("/studenthome/", '')) >= 1)) && req.method === "GET"){
+    if ((req._parsedUrl.pathname === "/studenthome" || (req._parsedUrl.pathname.startsWith("/studenthome") && parseInt(req._parsedUrl.pathname.replace("/studenthome/", '')) >= 1)) && req.method === "GET") {
         return next();
     }
     logger.log("User authentication started");

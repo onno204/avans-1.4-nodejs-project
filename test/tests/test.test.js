@@ -829,8 +829,8 @@ describe('API', function () {
             });
         });
 
-        describe('#UC-202- List meals', function () {
-            it('#TC-202-1 should list all meals', function (done) {
+        describe('#UC-303 List meals', function () {
+            it('#TC-303-1 should list all meals', function (done) {
                 chai.request(app)
                     .get('/api/studenthome/${collectedData.createdHouse.id}/meal/')
                     .set({"Authorization": `Bearer ${collectedData.authToken}`})
@@ -843,8 +843,20 @@ describe('API', function () {
                     });
             });
         });
-        describe('#UC-203- Details of a meal', function () {
-            it('#TC-203-1 should list details of a meal', function (done) {
+        describe('#UC-304 Details of a meal', function () {
+            it('#TC-304-1 non existing mealId', function (done) {
+                // Changed mealId to a non-existing one
+                chai.request(app)
+                    .get(`/api/studenthome/${collectedData.createdHouse.id}/meal/${faker.datatype.number()}`)
+                    .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                    .end((err, res) => {
+                        expect(res).to.have.status(404);
+                        expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                        done()
+                    });
+            });
+
+            it('#TC-304-2 should list details of a meal', function (done) {
                 chai.request(app)
                     .get(`/api/studenthome/${collectedData.createdHouse.id}/meal/${collectedData.createdMeal.id}`)
                     .set({"Authorization": `Bearer ${collectedData.authToken}`})
@@ -859,8 +871,40 @@ describe('API', function () {
                     });
             });
         });
-        describe('#UC-305- Delete a meal', function () {
+        describe('#UC-305 Delete a meal', function () {
             if (alsoDelete) {
+                it('#TC-305-1 Non existing meal', function (done) {
+                    // Changed mealId to a non-existing one
+                    chai.request(app)
+                        .del(`/api/studenthome/${collectedData.createdHouse.id}/meal/${faker.datatype.number()}`)
+                        .set({"Authorization": `Bearer ${collectedData.authToken}`})
+                        .end((err, res) => {
+                            expect(res).to.have.status(404);
+                            expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                            done()
+                        });
+                });
+                it('#TC-305-2 Auhtorization missing', function (done) {
+                    // Removed authorization header
+                    chai.request(app)
+                        .del(`/api/studenthome/${collectedData.createdHouse.id}/meal/${collectedData.createdMeal.id}`)
+                        .end((err, res) => {
+                            expect(res).to.have.status(401);
+                            expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                            done()
+                        });
+                });
+                it('#TC-305-3 Actor is not the owner', function (done) {
+                    // Changed authorization header
+                    chai.request(app)
+                        .del(`/api/studenthome/${collectedData.createdHouse.id}/meal/${collectedData.createdMeal.id}`)
+                        .set({"Authorization": `Bearer ${collectedData.authToken2}`})
+                        .end((err, res) => {
+                            expect(res).to.have.status(401);
+                            expect(res).to.have.property('body').to.have.property('success').to.equal(false);
+                            done()
+                        });
+                });
                 it('#TC-305-1 should delete a meal', function (done) {
                     chai.request(app)
                         .del(`/api/studenthome/${collectedData.createdHouse.id}/meal/${collectedData.createdMeal.id}`)

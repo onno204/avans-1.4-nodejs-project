@@ -10,6 +10,7 @@ router.get('/', studenthome_controller.house_all_get);
 router.get('/:homeId', studenthome_controller.house_details_get);
 router.put('/:homeId', studenthome_controller.house_update_put);
 router.delete('/:homeId', studenthome_controller.house_delete_delete);
+router.put('/:homeId/user', studenthome_controller.house_add_user_put);
 
 
 router.post('/:homeId/meal/', meal_controller.create_post);

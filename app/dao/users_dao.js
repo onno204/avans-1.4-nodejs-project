@@ -11,7 +11,7 @@ exports.add = function (data, callback) {
         database.con.query('INSERT INTO `users` (`token`, `firstname`, `lastname`, `studentnumber`, `email_address`, `password`) VALUES (?,?,?,?,?,?)',
             [res, data.firstname, data.lastname, data.studentnumber, data.email_address, hashed], function (error, results, fields) {
                 if (error) return callback(error.sqlMessage, undefined);
-                if (results.affectedRows === 0) return callback("no-rows-affected", undefined);
+                if (results.affectedRows === 0) return callback("user-already-exists", undefined);
                 exports.generateNewToken(data.email_address, results.insertId, callback)
             });
     });
@@ -35,7 +35,7 @@ exports.generateNewToken = function (email, user_id, callback) {
             [res, email, user_id], function (error, results, fields) {
                 if (error) return callback(error.sqlMessage, undefined);
                 if (results.affectedRows === 0) return callback("failed to update token", undefined);
-                callback(undefined, res);
+                callback(undefined, {token: res, user_id: user_id});
             });
     });
 }

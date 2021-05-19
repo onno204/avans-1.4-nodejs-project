@@ -23,6 +23,7 @@ exports.house_create_post = function (req, res) {
         postalcode: req.body.postalcode,
         city: req.body.city,
         phonenumber: req.body.phonenumber,
+        user_id: req.user_id
     }, (err2, res2) => {
         if (err2) {
             logger.log("Error in creation:", err2);
@@ -60,7 +61,7 @@ exports.house_details_get = function (req, res) {
         }
         logger.log("Returning house details:", res2);
         return res.status(200).send({"success": true, "house": res2});
-    })
+    });
 };
 
 exports.house_update_put = function (req, res) {
@@ -78,22 +79,28 @@ exports.house_update_put = function (req, res) {
     }
 
     logger.log("Studenthouse update with id", req.params.homeId);
-    studenthouse_dao.update(req.params.homeId, {
-        id: req.params.homeId,
-        name: req.body.name,
-        street: req.body.street,
-        housenumber: req.body.housenumber,
-        postalcode: req.body.postalcode,
-        city: req.body.city,
-        phonenumber: req.body.phonenumber,
-    }, (err, res2) => {
+    studenthouse_dao.checkIfUserIsAdmin(req.params.homeId, req.user_id, (err, user_verified) => {
         if (err) {
             logger.log("Error in update:", err);
-            return res.status(400).send({"success": false, "error": err});
+            return res.status(401).send({"success": false, "error": err});
         }
-        logger.log("Update house successfully");
-        return res.status(202).send({"success": true, "house": res2});
-    })
+        studenthouse_dao.update(req.params.homeId, {
+            id: req.params.homeId,
+            name: req.body.name,
+            street: req.body.street,
+            housenumber: req.body.housenumber,
+            postalcode: req.body.postalcode,
+            city: req.body.city,
+            phonenumber: req.body.phonenumber,
+        }, (err, res2) => {
+            if (err) {
+                logger.log("Error in update:", err);
+                return res.status(400).send({"success": false, "error": err});
+            }
+            logger.log("Update house successfully");
+            return res.status(202).send({"success": true, "house": res2});
+        });
+    });
 };
 
 exports.house_delete_delete = function (req, res) {
@@ -103,12 +110,18 @@ exports.house_delete_delete = function (req, res) {
         logger.log("Request cancelled because of an invalid param");
         return;
     }
-    studenthouse_dao.remove(req.params.homeId, (err, res2) => {
+    studenthouse_dao.checkIfUserIsAdmin(req.params.homeId, req.user_id, (err, user_verified) => {
         if (err) {
-            logger.log("Error in removing:", err);
-            return res.status(400).send({"success": false, "error": err});
+            logger.log("Error in update:", err);
+            return res.status(401).send({"success": false, "error": err});
         }
-        logger.log("House removed");
-        return res.status(202).send({"success": true, "id": res2});
-    })
+        studenthouse_dao.remove(req.params.homeId, (err, res2) => {
+            if (err) {
+                logger.log("Error in removing:", err);
+                return res.status(400).send({"success": false, "error": err});
+            }
+            logger.log("House removed");
+            return res.status(202).send({"success": true, "id": res2});
+        });
+    });
 };

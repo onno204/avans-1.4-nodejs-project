@@ -1,5 +1,5 @@
 const logger = require('tracer').console()
-
+const regexTests = require("./regexTests");
 
 exports.verifyParam = function (req, res, paramName, paramType) {
     const success = exports.verifyValue(req.params[paramName], paramType);
@@ -27,6 +27,13 @@ exports.verifyValue = function (value, type) {
         case 'int':
             value = parseInt(value);
             success = !isNaN(value);
+            break;
+        case 'float':
+            value = parseFloat(value);
+            success = !isNaN(value);
+            break;
+        case 'date':
+            success = regexTests.regexTestISODate(value);
             break;
         default:
             success = typeof value === type;

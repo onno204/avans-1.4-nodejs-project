@@ -1,8 +1,8 @@
 const database = require("./database");
 
 exports.add = function (data, callback) {
-    database.con.query('INSERT INTO `studenthouses` (`name`, `street`, `housenumber`, `postalcode`, `city`, `phonenumber`) VALUES (?,?,?,?,?,?)',
-        [data.name, data.street, data.housenumber, data.postalcode, data.city, data.phonenumber], function (error, results, fields) {
+    database.con.query('INSERT INTO `studenthouses` (`name`, `street`, `housenumber`, `postalcode`, `city`, `phonenumber`, `user_id`) VALUES (?,?,?,?,?,?,?)',
+        [data.name, data.street, data.housenumber, data.postalcode, data.city, data.phonenumber, data.user_id], function (error, results, fields) {
             if (error) return callback(error.sqlMessage, undefined);
             if (results.affectedRows === 0) return callback("no-rows-affected", undefined);
             callback(undefined, results.insertId);
@@ -24,6 +24,16 @@ exports.get = function (id, callback) {
         if (error) return callback(error.sqlMessage, undefined);
         if (results.length === 0) {
             return callback("house-not-found", undefined);
+        }
+        callback(undefined, results[0]);
+    });
+}
+
+exports.checkIfUserIsAdmin = function (id, user_id, callback) {
+    database.con.query('SELECT * FROM studenthouses WHERE id = ? AND user_id = ?', [id, user_id], function (error, results, fields) {
+        if (error) return callback(error.sqlMessage, undefined);
+        if (results.length === 0) {
+            return callback("house-not-owned-by-user", undefined);
         }
         callback(undefined, results[0]);
     });
